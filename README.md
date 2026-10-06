@@ -73,6 +73,37 @@ Implementación técnica (infrastructure)
 
 Por ejemplo, una futura búsqueda de recursos entraría por una página o endpoint de `src/app`, ejecutaría un caso de uso de `src/modules/resources/application`, usaría un contrato definido en `domain` y resolvería los datos mediante un repositorio de `infrastructure`.
 
+## CRUD de recursos y patrones creacionales
+
+| Método | Ruta | Acción |
+| --- | --- | --- |
+| `GET` | `/api/resources` | Listar recursos |
+| `POST` | `/api/resources` | Publicar un recurso |
+| `GET` | `/api/resources/:id` | Consultar un recurso |
+| `PATCH` | `/api/resources/:id` | Actualizar los campos enviados |
+| `DELETE` | `/api/resources/:id` | Eliminar un recurso |
+
+Ejemplo de cuerpo para `POST`:
+
+```json
+{
+  "modality": "exchange",
+  "title": "Bicicleta rin 16",
+  "description": "Bicicleta infantil en buen estado",
+  "category": "other",
+  "location": "Suba, Bogotá",
+  "wantedInReturn": "Patines"
+}
+```
+
+### Factory Method: `modules/resources/domain/factories`
+
+Un recurso se publica en una de tres modalidades, cada una con reglas propias: **donación** (gratis), **intercambio** (exige `wantedInReturn`) y **venta solidaria** (exige `price`, con un tope). `ResourceCreator` define el algoritmo común (validar los campos compartidos y asignar identidad) y delega en el método de fábrica `createResource` la decisión de qué subclase de `Resource` instanciar. `DonationResourceCreator`, `ExchangeResourceCreator` y `SaleResourceCreator` son los creadores concretos. Los casos de uso `CreateResource` y `UpdateResource` solo piden el creador de la modalidad y no conocen las subclases, así que agregar una modalidad (por ejemplo, préstamo) no modifica el código existente.
+
+### Singleton: `modules/resources/infrastructure/InMemoryResourceRepository.ts`
+
+Mientras no haya base de datos, los recursos se guardan en memoria, y todos los endpoints deben compartir el mismo almacén. Si no fuera así, un recurso creado con `POST` no aparecería en el `GET`. El repositorio tiene constructor privado y solo se obtiene con `getInstance()`. La instancia se guarda en `globalThis` porque el hot reload de `next dev` vuelve a evaluar los módulos y una propiedad estática se perdería en cada recarga. Los datos se pierden al reiniciar el servidor.
+
 ## Tecnologías base
 
 - Next.js con App Router
