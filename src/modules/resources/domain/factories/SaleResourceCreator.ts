@@ -8,15 +8,21 @@ export class SaleResourceCreator extends ResourceCreator {
     base: BaseResourceProps,
     draft: ResourceDraft,
   ): SaleResource {
-    const price = Number(draft.price);
-    if (draft.price === "" || draft.price == null || !Number.isFinite(price)) {
-      throw new ValidationError("El precio es obligatorio para una venta");
+    const rawPrice = draft.price;
+    // La API admite números y texto decimal del formulario, nunca coerciones
+    // de booleanos, arrays u objetos. Los precios se expresan en pesos enteros.
+    if (
+      (typeof rawPrice !== "number" && typeof rawPrice !== "string") ||
+      (typeof rawPrice === "string" && !/^\d+$/.test(rawPrice.trim()))
+    ) {
+      throw new ValidationError("El precio debe ser un número entero de pesos");
     }
-    if (price <= 0 || price > MAX_SALE_PRICE) {
+    const price = Number(rawPrice);
+    if (!Number.isSafeInteger(price) || price < 1 || price > MAX_SALE_PRICE) {
       throw new ValidationError(
-        `El precio debe ser mayor a 0 y no superar ${MAX_SALE_PRICE.toLocaleString("es-CO")}`,
+        `El precio debe ser un entero entre 1 y ${MAX_SALE_PRICE.toLocaleString("es-CO")} COP`,
       );
     }
-    return new SaleResource(base, Math.round(price));
+    return new SaleResource(base, price);
   }
 }
