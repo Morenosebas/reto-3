@@ -1,89 +1,39 @@
-# Reutiliza · Reto 3
+# Reutiliza · PADISOFT
 
-Repositorio base para el Reto 3: diseñar una plataforma que facilite el intercambio, la reutilización y el aprovechamiento de objetos, materiales y productos que todavía tienen valor para otras personas.
+Reutiliza permite publicar, consultar, editar y eliminar recursos para **donación, intercambio y venta solidaria**. Continúa el Reto 3 como un **monolito modular full-stack**: interfaz React y API Next.js viven en este repositorio. La Actividad 4 documenta exactamente dos patrones creacionales: **Factory Method y Singleton**.
 
-> Esta primera entrega contiene únicamente el proyecto base de Next.js, la decisión arquitectónica y la estructura de carpetas. La funcionalidad se implementará en una siguiente etapa.
+## Ejecutar y verificar
 
-## Arquitectura elegida
+Requisitos: Node.js **20.9 o superior** y npm. La verificación local se realizó con Node 22.17.0. Desde la raíz:
 
-Se eligió una **arquitectura de monolito modular full-stack con Next.js App Router**.
-
-### Motivo de elección
-
-- **Un solo repositorio:** frontend y backend evolucionan juntos, lo que reduce la complejidad inicial del proyecto universitario.
-- **Separación por responsabilidades:** las rutas de Next.js, los componentes visuales y la lógica de negocio tienen ubicaciones diferentes.
-- **Fácil de comenzar y de escalar:** se puede iniciar con una aplicación sencilla y agregar módulos sin convertir el proyecto en una estructura desordenada.
-- **TypeScript compartido:** frontend y backend pueden usar los mismos tipos y contratos, disminuyendo errores de integración.
-- **Backend integrado:** Next.js App Router permite crear Route Handlers para la API sin administrar un servidor independiente en esta fase.
-- **Evolución gradual:** la infraestructura inicial puede conectarse más adelante a una base de datos, autenticación y servicios externos sin mover la lógica de negocio.
-- **Menor costo operativo:** para el alcance del reto no es necesario introducir microservicios, colas o múltiples despliegues.
-
-Se eligió un monolito **modular**, no una aplicación sin límites: cada capacidad del negocio tendrá su propio módulo y las dependencias entre capas serán explícitas.
-
-## Estructura de carpetas
-
-```text
-reto-3-reutiliza/
-├── public/                              # Recursos estáticos públicos
-├── src/
-│   ├── app/                             # Capa de entrada de Next.js (App Router)
-│   │   ├── api/                         # Backend HTTP mediante Route Handlers
-│   │   │   └── resources/               # Endpoints del módulo de recursos
-│   │   ├── globals.css                  # Estilos globales
-│   │   ├── layout.tsx                   # Layout raíz de la aplicación
-│   │   └── page.tsx                     # Página principal
-│   │
-│   ├── components/                      # Componentes reutilizables de presentación
-│   │   ├── layout/                      # Header, navegación y footer
-│   │   └── shared/                      # Botones, inputs, estados y UI común
-│   │
-│   └── modules/                         # Módulos orientados al negocio
-│       └── resources/                   # Intercambio y reutilización de recursos
-│           ├── domain/                  # Entidades, reglas y contratos del dominio
-│           ├── application/             # Casos de uso y servicios de aplicación
-│           ├── infrastructure/          # Base de datos, repositorios e integraciones
-│           └── presentation/           # Adaptadores del módulo para la UI
-│
-├── package.json                          # Dependencias y scripts
-└── README.md                             # Decisión arquitectónica y guía del proyecto
+```bash
+npm ci
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm run start
 ```
 
-## Responsabilidad de cada capa
+Si Turbopack está limitado por el entorno, Next.js permite compilar con `npm run build -- --webpack`; esta alternativa pasó la verificación local. Ver [resultados y restricciones](docs/verificacion.md).
 
-| Carpeta | Responsabilidad | No debería contener |
+Para desarrollar: `npm run dev` y abrir `http://localhost:3000`. Para probar la API contra ese servidor: `npm run test:http`. Otro puerto local: `TEST_BASE_URL=http://127.0.0.1:3187 npm run test:http`.
+
+`npm test` compila las pruebas TypeScript a `.test-build/` y ejecuta el runner incorporado de Node, sin añadir dependencias. Cubre dominio, casos de uso, contrato de entrada, repositorio y serialización. `test:http` comprueba rutas HTTP reales; crea y elimina únicamente sus propios recursos de prueba. Ninguno sustituye una prueba de interfaz en navegador.
+
+El proyecto usa Next.js 16.3.6, React 19.2.8, TypeScript, Tailwind CSS 4 y ESLint 9. Las fuentes se resuelven con familias del sistema y fallbacks explícitos: la compilación no descarga Google Fonts. Se conservan colores, tarjetas, distribución y animaciones; la tipografía exacta depende del equipo. Una instalación nueva de dependencias sí requiere red o una caché npm completa.
+
+## API y reglas
+
+| Método | Ruta | Resultado |
 | --- | --- | --- |
-| `src/app` | Routing, layouts, metadata y endpoints HTTP de Next.js. | Reglas de negocio complejas. |
-| `src/components` | Componentes visuales reutilizables y composición de la interfaz. | Consultas directas a la base de datos. |
-| `modules/*/domain` | Modelo del negocio, entidades, value objects y contratos. | Dependencias de React o Next.js. |
-| `modules/*/application` | Casos de uso como publicar, buscar, intercambiar o solicitar un recurso. | Detalles de almacenamiento o presentación. |
-| `modules/*/infrastructure` | Implementaciones técnicas: persistencia, repositorios y servicios externos. | Componentes visuales. |
-| `modules/*/presentation` | Mapeadores, view models y adaptadores específicos del módulo. | Acceso directo no abstraído a infraestructura. |
+| GET | `/api/resources` | Lista ordenada por fecha de creación, 200 |
+| POST | `/api/resources` | Crea recurso, 201 |
+| GET | `/api/resources/:id` | Consulta recurso, 200 / 404 |
+| PATCH | `/api/resources/:id` | Actualización parcial, 200 / 400 / 404 |
+| DELETE | `/api/resources/:id` | Elimina recurso, 204 / 404 |
 
-## Flujo esperado de una funcionalidad
-
-```text
-Interfaz / Route Handler
-          ↓
-Caso de uso (application)
-          ↓
-Contrato del dominio (domain)
-          ↓
-Implementación técnica (infrastructure)
-```
-
-Por ejemplo, una futura búsqueda de recursos entraría por una página o endpoint de `src/app`, ejecutaría un caso de uso de `src/modules/resources/application`, usaría un contrato definido en `domain` y resolvería los datos mediante un repositorio de `infrastructure`.
-
-## CRUD de recursos y patrones creacionales
-
-| Método | Ruta | Acción |
-| --- | --- | --- |
-| `GET` | `/api/resources` | Listar recursos |
-| `POST` | `/api/resources` | Publicar un recurso |
-| `GET` | `/api/resources/:id` | Consultar un recurso |
-| `PATCH` | `/api/resources/:id` | Actualizar los campos enviados |
-| `DELETE` | `/api/resources/:id` | Eliminar un recurso |
-
-Ejemplo de cuerpo para `POST`:
+POST y PATCH requieren un objeto JSON: `null`, arrays y primitivas devuelven 400. Un PATCH `{}` conserva los campos y reconstruye el recurso, actualizando `updatedAt`. Los campos omitidos conservan su valor. JSON malformado y validaciones fallidas devuelven 400.
 
 ```json
 {
@@ -96,46 +46,39 @@ Ejemplo de cuerpo para `POST`:
 }
 ```
 
-### Factory Method: `modules/resources/domain/factories`
+- Campos comunes: título de 3–80 caracteres, descripción de 10–500, ubicación de 3–120, categoría válida y estado válido. Se recortan espacios de textos.
+- Donación: no tiene precio ni contraprestación; ignora esos datos adicionales.
+- Intercambio: `wantedInReturn` de 3–120 caracteres.
+- Venta: **pesos enteros entre 1 y 500.000 COP**, como número o texto de dígitos decimales (se permiten espacios exteriores). No se redondean fracciones ni se convierten booleanos, arrays u objetos.
+- Estados: `available`, `reserved`, `delivered`. Crear asigna `available` cuando se omite el estado.
 
-Un recurso se publica en una de tres modalidades, cada una con reglas propias: **donación** (gratis), **intercambio** (exige `wantedInReturn`) y **venta solidaria** (exige `price`, con un tope). `ResourceCreator` define el algoritmo común (validar los campos compartidos y asignar identidad) y delega en el método de fábrica `createResource` la decisión de qué subclase de `Resource` instanciar. `DonationResourceCreator`, `ExchangeResourceCreator` y `SaleResourceCreator` son los creadores concretos. Los casos de uso `CreateResource` y `UpdateResource` solo piden el creador de la modalidad y no conocen las subclases, así que agregar una modalidad (por ejemplo, préstamo) no modifica el código existente.
+## Arquitectura implementada
 
-### Singleton: `modules/resources/infrastructure/InMemoryResourceRepository.ts`
-
-Mientras no haya base de datos, los recursos se guardan en memoria, y todos los endpoints deben compartir el mismo almacén. Si no fuera así, un recurso creado con `POST` no aparecería en el `GET`. El repositorio tiene constructor privado y solo se obtiene con `getInstance()`. La instancia se guarda en `globalThis` porque el hot reload de `next dev` vuelve a evaluar los módulos y una propiedad estática se perdería en cada recarga. Los datos se pierden al reiniciar el servidor.
-
-## Tecnologías base
-
-- Next.js con App Router
-- React
-- TypeScript
-- Tailwind CSS
-- ESLint
-
-## Inicio rápido
-
-Requisitos: Node.js 20 o superior y npm.
-
-```bash
-npm install
-npm run dev
+```text
+src/app/page.tsx                         Entrada de la interfaz / carga inicial
+src/components/resources/              Formulario, tarjetas y gestión de UI
+src/app/api/resources/                  Adaptadores HTTP de colección y recurso
+src/modules/resources/
+  domain/                              Entidades, contratos, reglas y Factory Method
+  application/                         Cinco casos de uso CRUD e interpretación de entrada
+  infrastructure/                      Repositorio Singleton en memoria
+  presentation/                        DTO, cliente HTTP, etiquetas y formato
+  resourceModule.ts                    Raíz de composición e inyección
 ```
 
-Abre [http://localhost:3000](http://localhost:3000).
+Los casos de uso reciben el contrato `ResourceRepository`; la implementación concreta se selecciona en `resourceModule.ts`. La página carga la lista inicial en servidor; las acciones de la UI usan la API. El dominio no importa React ni Next.js.
 
-## Scripts disponibles
+## Documentación de Actividad 4
 
-```bash
-npm run dev       # Servidor de desarrollo
-npm run lint      # Revisión estática
-npm run build     # Build de producción
-npm run start     # Servidor de producción
-```
+- [Arquitectura, SOLID y justificación de los dos patrones](docs/actividad-4.md).
+- [UML editable y exportaciones revisadas](docs/uml/README.md).
+- [Guion de demostración de 12 minutos](docs/demo.md).
+- [Resultados y límites de la verificación local](docs/verificacion.md).
 
-## Próximos pasos
+## Límites del prototipo y entrega
 
-1. Definir las historias de usuario y el modelo de `Resource`.
-2. Crear los casos de uso del módulo `resources`.
-3. Elegir la base de datos y construir los repositorios.
-4. Diseñar las pantallas para explorar y publicar recursos.
-5. Incorporar autenticación, solicitudes de intercambio y moderación.
+El almacén es un `Map` en memoria compartido dentro del mismo contexto de ejecución mediante `globalThis`. Reiniciar restaura tres ejemplos; no hay base de datos, sincronización entre procesos ni garantía entre workers o instancias serverless. No hay autenticación ni propiedad de publicaciones: esta demo no está preparada para producción pública.
+
+La indicación docente menciona repositorios frontend y backend. Este proyecto contiene ambos componentes en **un solo repositorio**. No se afirma que eso equivalga al requisito de dos repositorios: debe aclararse con el docente antes de la entrega. No se ha dividido el proyecto ni creado un segundo repositorio.
+
+Según los requisitos aportados: exactamente dos patrones, UML coherente, documentación Markdown/PDF, máximo tres integrantes y exposición de 10–15 minutos. La entrega indicada es el enlace en Campus el 21 de octubre a las 20:00 de Colombia. Esta preparación local no constituye una entrega ni publica cambios.

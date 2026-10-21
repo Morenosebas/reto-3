@@ -1,0 +1,22 @@
+digraph Singleton {
+ graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.6", ranksep="0.7", label="Reutiliza · Singleton\nRevisión basada en código · 21 octubre 2026", labelloc=t, fontsize=22, fontname="DejaVu Sans"];
+ node [shape=record, style=filled, fillcolor="#eef4ff", color="#2440d8", fontname="DejaVu Sans", fontsize=12];
+ edge [fontname="DejaVu Sans", fontsize=10, color="#44516d"];
+ Interface [label="{ResourceRepository «interface»|+ findAll(): Promise\<Resource[]\>\l+ findById(id: string): Promise\<Resource ∣ null\>\l+ save(resource: Resource): Promise\<void\>\l+ delete(id: string): Promise\<boolean\>\l}"];
+ Repository [shape=plain, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="8" BGCOLOR="#eef4ff" COLOR="#2440d8">
+ <TR><TD><B>InMemoryResourceRepository</B></TD></TR>
+ <HR/><TR><TD ALIGN="LEFT">− resources: Map&lt;string, Resource&gt;</TD></TR><HR/>
+ <TR><TD ALIGN="LEFT">− constructor()<BR ALIGN="LEFT"/><U>+ getInstance(): InMemoryResourceRepository</U><BR ALIGN="LEFT"/>+ findAll(): Promise&lt;Resource[]&gt;<BR ALIGN="LEFT"/>+ findById(id: string): Promise&lt;Resource ∣ null&gt;<BR ALIGN="LEFT"/>+ save(resource: Resource): Promise&lt;void&gt;<BR ALIGN="LEFT"/>+ delete(id: string): Promise&lt;boolean&gt;<BR ALIGN="LEFT"/>− seed(): void<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+ Global [label="{globalThis «runtime»|inMemoryResourceRepository?: InMemoryResourceRepository\l}", fillcolor="#fff5cf"];
+ Module [label="{resourceModule.ts «raíz de composición»|repository = InMemoryResourceRepository.getInstance()\lresourceUseCases: list, get, create, update, delete\l}", fillcolor="#fff5cf"];
+ Cases [label="{CreateResource / ListResources / GetResource\nUpdateResource / DeleteResource|− repository: ResourceRepository\l|+ constructor(repository: ResourceRepository)\l+ execute(...): Promise\<...\>\l}"];
+ Resource [label="{Resource «abstract»|id: string\l}"];
+ Note [shape=note, fillcolor="#f8fafc", label="− privado · + público · subrayado: operación estática\lTriángulo vacío discontinuo: realiza interfaz\lAlmacén único por contexto de ejecución.\lNo persistente, no sincroniza workers ni procesos.\lglobalThis guarda la instancia; no existe campo static instance.\l"];
+ Repository -> Interface [arrowhead=empty, style=dashed, label="implementa"];
+ Global -> Repository [arrowhead=vee, label="0..1 instancia"];
+ Module -> Repository [style=dashed, label="obtiene"];
+ Module -> Cases [style=dashed, label="crea e inyecta"];
+ Cases -> Interface [style=dashed, label="depende del contrato"];
+ Repository -> Resource [arrowhead=vee, label="almacena 0..*"];
+}
