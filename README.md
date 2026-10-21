@@ -2,6 +2,10 @@
 
 Plataforma para publicar, consultar, editar y eliminar recursos destinados a **donación, intercambio y venta solidaria**. La aplicación integra una interfaz React y una API HTTP mediante un monolito modular con Next.js. El módulo de recursos implementa los patrones creacionales **Factory Method** y **Singleton**.
 
+## Integrantes
+
+Daniel Parra · Johan Sebastián González · Sebastián Vargas
+
 ## Requisitos e instalación
 
 - Node.js 20.9 o superior.
