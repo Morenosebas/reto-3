@@ -91,6 +91,12 @@ Los textos se validan después de eliminar espacios exteriores. El precio admite
 
 ## Arquitectura
 
+### Motivos de elección
+
+Se eligió un monolito modular full-stack con Next.js App Router para mantener la interfaz y la API en un mismo proyecto, compartir tipos y contratos TypeScript y reducir la complejidad inicial del reto. Los Route Handlers permiten integrar la API sin administrar un servidor independiente. El alcance actual no requiere microservicios, colas ni múltiples despliegues.
+
+La división por módulos y capas separa presentación, coordinación de casos de uso, reglas de negocio y almacenamiento. Esta organización facilita incorporar capacidades de forma gradual. El contrato `ResourceRepository` permite sustituir el almacén temporal por una implementación persistente manteniendo las reglas de construcción en el dominio.
+
 ```text
 src/app/page.tsx                         Página principal y carga inicial
 src/components/resources/              Formulario, catálogo y tarjetas
@@ -104,6 +110,14 @@ src/modules/resources/
 ```
 
 Los casos de uso reciben el contrato `ResourceRepository`. La raíz de composición selecciona `InMemoryResourceRepository` e inyecta la instancia compartida. `ResourceSchemas.ts` valida los objetos de entrada con Zod en la capa de aplicación: los campos desconocidos se descartan, los conocidos conservan tipos estrictos y los errores esperados se traducen a `ValidationError`. Los creadores del dominio mantienen las reglas de construcción de cada modalidad. La página obtiene la lista inicial en el servidor y las acciones de la interfaz utilizan la API. El dominio es independiente de React, Next.js y Zod.
+
+### Elección de patrones creacionales
+
+**Factory Method.** Donación, intercambio y venta solidaria comparten atributos, pero requieren productos y reglas específicas. `ResourceCreator` concentra las reglas comunes y la identidad; `createResource` delega la construcción en los creadores concretos. `CreateResource` y `UpdateResource` reutilizan este mecanismo para aplicar las mismas reglas al publicar y editar. Una nueva modalidad puede conservar el algoritmo común, aunque requiere ampliar los tipos, el registro de creadores, los esquemas de entrada y la interfaz.
+
+**Singleton.** El prototipo almacena publicaciones en memoria. Instancias independientes del repositorio producirían almacenes distintos y podrían impedir que una publicación creada por un consumidor apareciera en las consultas de otro. `InMemoryResourceRepository` expone `getInstance()` y conserva la referencia en `globalThis`; la raíz de composición inyecta esa instancia compartida en los casos de uso. Su unicidad se limita al mismo contexto de ejecución: no proporciona persistencia entre reinicios ni sincronización entre procesos, workers o instancias serverless.
+
+El [informe técnico](docs/actividad-4.md) amplía la justificación, los participantes y el alcance de SOLID. Los [diagramas UML](docs/uml/README.md) representan sus clases y relaciones.
 
 ## Tecnologías
 
