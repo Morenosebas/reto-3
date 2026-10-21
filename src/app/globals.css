@@ -2,6 +2,9 @@
 
 /* Siempre en claro: fondo blanco también con el sistema en modo oscuro. */
 :root {
+  /* Fuentes del sistema: build y demo sin descarga de Google Fonts. */
+  --font-atkinson: system-ui, "Segoe UI", Arial, sans-serif;
+  --font-anybody: "Arial Narrow", "Liberation Sans Narrow", Impact, sans-serif;
   color-scheme: light;
   --paper: #ffffff; /* fondo de la página */
   --sheet: #ffffff; /* superficie del formulario */
