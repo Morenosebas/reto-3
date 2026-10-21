@@ -103,11 +103,11 @@ src/modules/resources/
   resourceModule.ts                    Composición e inyección de dependencias
 ```
 
-Los casos de uso reciben el contrato `ResourceRepository`. La raíz de composición selecciona `InMemoryResourceRepository` e inyecta la instancia compartida. La página obtiene la lista inicial en el servidor y las acciones de la interfaz utilizan la API. El dominio es independiente de React y Next.js.
+Los casos de uso reciben el contrato `ResourceRepository`. La raíz de composición selecciona `InMemoryResourceRepository` e inyecta la instancia compartida. `ResourceSchemas.ts` valida los objetos de entrada con Zod en la capa de aplicación: los campos desconocidos se descartan, los conocidos conservan tipos estrictos y los errores esperados se traducen a `ValidationError`. Los creadores del dominio mantienen las reglas de construcción de cada modalidad. La página obtiene la lista inicial en el servidor y las acciones de la interfaz utilizan la API. El dominio es independiente de React, Next.js y Zod.
 
 ## Tecnologías
 
-Next.js 16.3.6, React 19.2.8, TypeScript, Tailwind CSS 4 y ESLint 9. La interfaz utiliza familias tipográficas del sistema con alternativas explícitas, por lo que la compilación no descarga fuentes externas. La tipografía exacta depende de las fuentes disponibles en cada equipo.
+Next.js 16.3.6, React 19.2.8, TypeScript, Zod 4.6.5, Tailwind CSS 4 y ESLint 9. La interfaz utiliza familias tipográficas del sistema con alternativas explícitas, por lo que la compilación no descarga fuentes externas. La tipografía exacta depende de las fuentes disponibles en cada equipo.
 
 ## Alcance y limitaciones
 

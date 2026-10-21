@@ -9,8 +9,9 @@ import { ListResources } from "../src/modules/resources/application/ListResource
 import { GetResource } from "../src/modules/resources/application/GetResource";
 import { UpdateResource } from "../src/modules/resources/application/UpdateResource";
 import { DeleteResource } from "../src/modules/resources/application/DeleteResource";
-import { toResourceInput } from "../src/modules/resources/application/ResourceInput";
+import { parseResourcePatch } from "../src/modules/resources/application/ResourceSchemas";
 import { toResourceDTO } from "../src/modules/resources/presentation/ResourceDTO";
+import "./resource-schemas.test";
 
 const base = { title: "Mesa reutilizable", description: "Mesa de madera en buen estado", category: "furniture", location: "Bogotá" };
 const repository = InMemoryResourceRepository.getInstance();
@@ -70,13 +71,13 @@ for (const price of [0.1, 0.49, 1.5, "0.1", 0, -1, 500001, true, false, [], [100
 }
 for (const body of [null, [], [1], 42, true, "texto", undefined]) {
   test(`POST/PATCH rechazan cuerpo no objeto: ${JSON.stringify(body)}`, () => {
-    assert.throws(() => toResourceInput(body), ValidationError);
+    assert.throws(() => parseResourcePatch(body), ValidationError);
   });
 }
 
 test("PATCH admite objeto vacío y conserva los campos", async () => {
   const item = await create.execute({ ...base, modality: "donation" });
-  try { assert.equal((await update.execute(item.id, toResourceInput({}))).title, item.title); }
+  try { assert.equal((await update.execute(item.id, parseResourcePatch({}))).title, item.title); }
   finally { await remove.execute(item.id); }
 });
 

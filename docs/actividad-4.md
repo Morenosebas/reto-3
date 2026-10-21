@@ -39,13 +39,22 @@ La solución es un **monolito modular full-stack** con Next.js App Router. La in
 ### Flujo de creación y actualización
 
 1. La interfaz envía los datos mediante `resourceApi.ts`.
-2. El Route Handler interpreta el objeto JSON e invoca el caso de uso.
-3. `CreateResource` o `UpdateResource` selecciona el creador de la modalidad.
-4. El creador valida los datos y construye una especialización de `Resource`.
-5. El caso de uso guarda el resultado mediante `ResourceRepository`.
-6. `toResourceDTO` transforma la entidad en una representación serializable; las fechas se expresan como cadenas ISO.
+2. El Route Handler lee el JSON e invoca el caso de uso con una entrada desconocida.
+3. La capa de aplicación valida la forma del objeto con Zod y conserva solo los campos reconocidos.
+4. `CreateResource` o `UpdateResource` selecciona el creador de la modalidad.
+5. El creador aplica las reglas del dominio y construye una especialización de `Resource`.
+6. El caso de uso guarda el resultado validado mediante `ResourceRepository`.
+7. `toResourceDTO` transforma la entidad en una representación serializable; las fechas se expresan como cadenas ISO.
 
-Las respuestas HTTP distinguen creación (201), consulta o actualización (200), eliminación (204), entrada inválida (400) y recurso inexistente (404).
+Las respuestas HTTP distinguen creación (201), consulta o actualización (200), eliminación (204), entrada inválida (400) y recurso inexistente (404). `readJsonBody` convierte JSON malformado en `ValidationError`; los esquemas Zod convierten errores de forma o tipo al mismo contrato de error esperado.
+
+### Validación de objetos de entrada
+
+`application/ResourceSchemas.ts` declara un esquema de creación discriminado por modalidad y un esquema parcial para PATCH. Los tipos de entrada y salida se infieren desde estos esquemas. Los campos ausentes en PATCH no reciben valores por defecto: el caso de uso fusiona los campos presentes con el recurso existente y valida el resultado completo según su modalidad antes de invocar la fábrica y guardar.
+
+Los objetos descartan campos desconocidos, incluidos identificadores y fechas que no son editables. La modalidad omitida en PATCH conserva la actual; `null` es inválido. Los campos conocidos se validan si llegan, incluso cuando pertenecen a otra modalidad, y los detalles irrelevantes se omiten al construir el producto. El precio acepta un entero o texto de dígitos decimales, sin coerción de booleanos, arreglos u objetos, y debe estar entre 1 y 500.000 COP.
+
+La conversión se realiza con `safeParse`; sus errores se traducen a `ValidationError` con mensajes en español y mantienen la respuesta HTTP 400 `{ "error": "…" }`. Las restricciones de texto, categorías, estados y modalidad también permanecen en los creadores del dominio, que protegen la construcción del recurso fuera del transporte HTTP.
 
 ## 4. Factory Method
 
@@ -55,7 +64,7 @@ Las tres modalidades comparten atributos, pero tienen condiciones de construcci�
 
 ### Decisión e implementación
 
-`ResourceCreator.create(draft, identity?)` define la validación común y la asignación de identidad. El método protegido y abstracto `createResource(base, draft): Resource` constituye el punto de extensión: cada creador concreto decide qué producto instanciar y valida los datos propios de su modalidad.
+`ResourceCreator.create(draft, identity?)` aplica las reglas comunes del dominio y asigna identidad. El método protegido y abstracto `createResource(base, draft): Resource` constituye el punto de extensión: cada creador concreto decide qué producto instanciar y valida los datos propios de su modalidad. Antes de la fábrica, los casos de uso ya han validado el objeto y sus tipos con los esquemas de aplicación.
 
 | Participante | Clase o símbolo | Archivo relativo a `src/modules/resources/` |
 | --- | --- | --- |
@@ -69,7 +78,7 @@ Las tres modalidades comparten atributos, pero tienen condiciones de construcci�
 | Clientes | `CreateResource`, `UpdateResource` | `application/CreateResource.ts`, `application/UpdateResource.ts` |
 | Selección de creador | `getResourceCreator`, registro `creators` | `domain/factories/index.ts` |
 
-`DonationResourceCreator` construye una donación sin datos adicionales. `ExchangeResourceCreator` valida la contraprestación. `SaleResourceCreator` acepta números enteros o texto decimal entero dentro del rango permitido; rechaza fracciones y conversiones implícitas de booleanos, arrays u objetos.
+`DonationResourceCreator` construye una donación sin datos adicionales. `ExchangeResourceCreator` valida la contraprestación. `SaleResourceCreator` conserva una comprobación de precio entero y rango; la entrada de aplicación transforma el texto decimal permitido en número antes de llamar al creador. La validación no redondea fracciones ni convierte booleanos, arrays u objetos.
 
 ### Justificación y alcance
 
@@ -129,6 +138,6 @@ Los [diagramas UML](uml/README.md) representan los creadores, productos, reposit
 
 ## 8. Validación y limitaciones
 
-El [registro de pruebas](verificacion.md) documenta 42 pruebas de dominio y aplicación, 47 comprobaciones HTTP y una compilación de producción completada con Webpack. Incluye validaciones de las tres modalidades, actualización parcial, errores, conservación de identidad y acceso compartido al repositorio.
+El [registro de pruebas](verificacion.md) documenta pruebas de dominio y aplicación, comprobaciones HTTP y una compilación de producción completada con Webpack. Incluye esquemas Zod, validaciones de las tres modalidades, actualización parcial, errores, conservación de identidad y acceso compartido al repositorio.
 
 La evidencia disponible cubre reglas y API; no incluye pruebas de interfaz en navegador, accesibilidad o comportamiento entre múltiples procesos. La ausencia de persistencia durable, autenticación y control de propiedad limita el alcance de la aplicación a un prototipo académico.

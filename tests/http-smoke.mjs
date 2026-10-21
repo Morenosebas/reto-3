@@ -36,12 +36,35 @@ try {
     expect((await request('GET', path)).status, 404);
     expect((await request('DELETE', path)).status, 404);
   }
+  const transitions = await request('POST', '/api/resources', { ...base, modality: 'donation' });
+  expect(transitions.status, 201);
+  owned.add(transitions.body.id);
+  const transitionPath = `/api/resources/${transitions.body.id}`;
+  expect((await request('PATCH', transitionPath, { modality: null })).status, 400);
+  expect((await request('PATCH', transitionPath, { modality: 'sale' })).status, 400);
+  const sale = await request('PATCH', transitionPath, { modality: 'sale', price: '1' });
+  expect(sale.status, 200);
+  expect(sale.body.price, 1);
+  const protectedFields = await request('PATCH', transitionPath, {
+    title: 'Recurso con campos extra', id: 'identidad-forjada', createdAt: 'fecha-forjada', customField: true,
+  });
+  expect(protectedFields.status, 200);
+  expect(protectedFields.body.id, transitions.body.id);
+  expect(protectedFields.body.price, 1);
+  expect((await request('PATCH', transitionPath, { price: true })).status, 400);
+  expect((await request('DELETE', transitionPath)).status, 204);
+  owned.delete(transitions.body.id);
+
   for (const price of [0.1, true, [100], 0, 500001]) {
     expect((await request('POST', '/api/resources', { ...base, modality: 'sale', price })).status, 400);
   }
+  const invalidDetail = await request('POST', '/api/resources', { ...base, modality: 'donation', price: true });
+  expect(invalidDetail.status, 400);
+  expect(typeof invalidDetail.body.error, 'string');
   expect((await request('POST', '/api/resources', { ...base, modality: 'exchange' })).status, 400);
   const malformed = await fetch(new URL('/api/resources', baseUrl), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{bad' });
   expect(malformed.status, 400);
+  expect(typeof (await malformed.json()).error, 'string');
   console.log(`${checks} comprobaciones HTTP correctas; recursos de prueba eliminados.`);
 } finally {
   for (const id of owned) {
