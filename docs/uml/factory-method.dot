@@ -1,0 +1,25 @@
+digraph FactoryMethod {
+ graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.5", ranksep="0.65", label="Reutiliza · Factory Method\nDiagrama de clases", labelloc=t, fontsize=22, fontname="DejaVu Sans"];
+ node [shape=record, style=filled, fillcolor="#eef4ff", color="#2440d8", fontname="DejaVu Sans", fontsize=11];
+ edge [fontname="DejaVu Sans", fontsize=10, color="#44516d"];
+ Creator [label="{ResourceCreator «abstract»|+ create(draft: ResourceDraft, identity?: ResourceIdentity): Resource\l# createResource(base: BaseResourceProps, draft: ResourceDraft): Resource «abstract»\l}"];
+ DonationCreator [label="{DonationResourceCreator|# createResource(base: BaseResourceProps): DonationResource\l}"];
+ ExchangeCreator [label="{ExchangeResourceCreator|# createResource(base: BaseResourceProps, draft: ResourceDraft): ExchangeResource\l}"];
+ SaleCreator [label="{SaleResourceCreator|# createResource(base: BaseResourceProps, draft: ResourceDraft): SaleResource\l}"];
+ Resource [label="{Resource «abstract»|+ id, title, description, location: string\l+ category: ResourceCategory; status: ResourceStatus\l+ createdAt, updatedAt: Date\l+ modality: ResourceModality «abstract, readonly»\l|# constructor(props: BaseResourceProps)\l+ modalityDetails(): ModalityDetails «abstract»\l}"];
+ Donation [label="{DonationResource|+ modality = donation\l|+ constructor(props: BaseResourceProps)\l+ modalityDetails(): \{\}\l}"];
+ Exchange [label="{ExchangeResource|+ modality = exchange\l+ wantedInReturn: string\l|+ constructor(props, wantedInReturn)\l+ modalityDetails(): \{wantedInReturn: string\}\l}"];
+ Sale [label="{SaleResource|+ modality = sale\l+ price: number\l|+ constructor(props, price)\l+ modalityDetails(): \{price: number\}\l}"];
+ UseCases [label="{CreateResource / UpdateResource|+ execute(...): Promise\<Resource\>\l}", fillcolor="#fff5cf"];
+ Registry [label="{factories/index.ts «módulo»|creators: Record\<ResourceModality, ResourceCreator\>\l+ getResourceCreator(modality: unknown): ResourceCreator\l}", fillcolor="#fff5cf"];
+ Notes [shape=note, fillcolor="#f8fafc", label="+ público · # protegido · triángulo vacío: herencia\lFlecha discontinua: dependencia / creación\lModalityDetails abrevia el tipo estructural:\l{wantedInReturn?: string; price?: number}\lResourceDraft: campos unknown opcionales\lResourceIdentity: id: string; createdAt: Date\lBaseResourceProps: atributos comunes sin modalidad\l"];
+ DonationCreator -> Creator [arrowhead=empty]; ExchangeCreator -> Creator [arrowhead=empty]; SaleCreator -> Creator [arrowhead=empty];
+ Donation -> Resource [arrowhead=empty]; Exchange -> Resource [arrowhead=empty]; Sale -> Resource [arrowhead=empty];
+ UseCases -> Registry [style=dashed, label="seleccionan creador"];
+ Registry -> Creator [style=dashed, label="devuelve"];
+ DonationCreator -> Donation [style=dashed, label="«create»"];
+ ExchangeCreator -> Exchange [style=dashed, label="«create»"];
+ SaleCreator -> Sale [style=dashed, label="«create»"];
+ {rank=same; DonationCreator; ExchangeCreator; SaleCreator}
+ {rank=same; Donation; Exchange; Sale}
+}

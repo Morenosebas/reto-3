@@ -1,5 +1,4 @@
 import type { NextRequest } from "next/server";
-import { toResourceInput } from "@/modules/resources/application/ResourceInput";
 import { toResourceDTO } from "@/modules/resources/presentation/ResourceDTO";
 import { resourceUseCases } from "@/modules/resources/resourceModule";
 import { errorResponse, readJsonBody } from "../http";
@@ -21,7 +20,7 @@ export async function GET(_request: NextRequest, ctx: Context) {
 export async function PATCH(request: NextRequest, ctx: Context) {
   try {
     const { id } = await ctx.params;
-    const changes = toResourceInput(await readJsonBody(request));
+    const changes = await readJsonBody(request);
     const resource = await resourceUseCases.update.execute(id, changes);
     return Response.json(toResourceDTO(resource));
   } catch (error) {

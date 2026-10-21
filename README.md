@@ -1,89 +1,67 @@
-# Reutiliza · Reto 3
+# Reutiliza
 
-Repositorio base para el Reto 3: diseñar una plataforma que facilite el intercambio, la reutilización y el aprovechamiento de objetos, materiales y productos que todavía tienen valor para otras personas.
+Plataforma para publicar, consultar, editar y eliminar recursos destinados a **donación, intercambio y venta solidaria**. La aplicación integra una interfaz React y una API HTTP mediante un monolito modular con Next.js. El módulo de recursos implementa los patrones creacionales **Factory Method** y **Singleton**.
 
-> Esta primera entrega contiene únicamente el proyecto base de Next.js, la decisión arquitectónica y la estructura de carpetas. La funcionalidad se implementará en una siguiente etapa.
+## Requisitos e instalación
 
-## Arquitectura elegida
+- Node.js 20.9 o superior.
+- npm y acceso al registro de paquetes, o una caché completa de dependencias.
 
-Se eligió una **arquitectura de monolito modular full-stack con Next.js App Router**.
-
-### Motivo de elección
-
-- **Un solo repositorio:** frontend y backend evolucionan juntos, lo que reduce la complejidad inicial del proyecto universitario.
-- **Separación por responsabilidades:** las rutas de Next.js, los componentes visuales y la lógica de negocio tienen ubicaciones diferentes.
-- **Fácil de comenzar y de escalar:** se puede iniciar con una aplicación sencilla y agregar módulos sin convertir el proyecto en una estructura desordenada.
-- **TypeScript compartido:** frontend y backend pueden usar los mismos tipos y contratos, disminuyendo errores de integración.
-- **Backend integrado:** Next.js App Router permite crear Route Handlers para la API sin administrar un servidor independiente en esta fase.
-- **Evolución gradual:** la infraestructura inicial puede conectarse más adelante a una base de datos, autenticación y servicios externos sin mover la lógica de negocio.
-- **Menor costo operativo:** para el alcance del reto no es necesario introducir microservicios, colas o múltiples despliegues.
-
-Se eligió un monolito **modular**, no una aplicación sin límites: cada capacidad del negocio tendrá su propio módulo y las dependencias entre capas serán explícitas.
-
-## Estructura de carpetas
-
-```text
-reto-3-reutiliza/
-├── public/                              # Recursos estáticos públicos
-├── src/
-│   ├── app/                             # Capa de entrada de Next.js (App Router)
-│   │   ├── api/                         # Backend HTTP mediante Route Handlers
-│   │   │   └── resources/               # Endpoints del módulo de recursos
-│   │   ├── globals.css                  # Estilos globales
-│   │   ├── layout.tsx                   # Layout raíz de la aplicación
-│   │   └── page.tsx                     # Página principal
-│   │
-│   ├── components/                      # Componentes reutilizables de presentación
-│   │   ├── layout/                      # Header, navegación y footer
-│   │   └── shared/                      # Botones, inputs, estados y UI común
-│   │
-│   └── modules/                         # Módulos orientados al negocio
-│       └── resources/                   # Intercambio y reutilización de recursos
-│           ├── domain/                  # Entidades, reglas y contratos del dominio
-│           ├── application/             # Casos de uso y servicios de aplicación
-│           ├── infrastructure/          # Base de datos, repositorios e integraciones
-│           └── presentation/           # Adaptadores del módulo para la UI
-│
-├── package.json                          # Dependencias y scripts
-└── README.md                             # Decisión arquitectónica y guía del proyecto
+```bash
+npm ci
+npm run dev
 ```
 
-## Responsabilidad de cada capa
+La aplicación está disponible en `http://localhost:3000`. Al iniciar el servidor se cargan tres publicaciones de ejemplo: una donación, un intercambio y una venta.
 
-| Carpeta | Responsabilidad | No debería contener |
-| --- | --- | --- |
-| `src/app` | Routing, layouts, metadata y endpoints HTTP de Next.js. | Reglas de negocio complejas. |
-| `src/components` | Componentes visuales reutilizables y composición de la interfaz. | Consultas directas a la base de datos. |
-| `modules/*/domain` | Modelo del negocio, entidades, value objects y contratos. | Dependencias de React o Next.js. |
-| `modules/*/application` | Casos de uso como publicar, buscar, intercambiar o solicitar un recurso. | Detalles de almacenamiento o presentación. |
-| `modules/*/infrastructure` | Implementaciones técnicas: persistencia, repositorios y servicios externos. | Componentes visuales. |
-| `modules/*/presentation` | Mapeadores, view models y adaptadores específicos del módulo. | Acceso directo no abstraído a infraestructura. |
+## Uso
 
-## Flujo esperado de una funcionalidad
+El formulario permite seleccionar una modalidad, completar los datos del recurso y publicarlo. El catálogo muestra las publicaciones y permite filtrarlas por modalidad. Cada tarjeta ofrece acciones para editar y eliminar el recurso; la edición también permite actualizar su estado.
 
-```text
-Interfaz / Route Handler
-          ↓
-Caso de uso (application)
-          ↓
-Contrato del dominio (domain)
-          ↓
-Implementación técnica (infrastructure)
+Las publicaciones se almacenan en memoria. Al reiniciar el servidor se pierden los cambios y se restauran los ejemplos iniciales.
+
+## Compilación y pruebas
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build -- --webpack
+npm run start
 ```
 
-Por ejemplo, una futura búsqueda de recursos entraría por una página o endpoint de `src/app`, ejecutaría un caso de uso de `src/modules/resources/application`, usaría un contrato definido en `domain` y resolvería los datos mediante un repositorio de `infrastructure`.
+El comando de compilación anterior utiliza Webpack, con el que se completó la validación de producción. `npm run build` utiliza Turbopack de forma predeterminada; las condiciones del entorno evaluado y los resultados se detallan en el [registro de pruebas](docs/verificacion.md).
 
-## CRUD de recursos y patrones creacionales
+Con un servidor local en ejecución:
 
-| Método | Ruta | Acción |
-| --- | --- | --- |
-| `GET` | `/api/resources` | Listar recursos |
-| `POST` | `/api/resources` | Publicar un recurso |
-| `GET` | `/api/resources/:id` | Consultar un recurso |
-| `PATCH` | `/api/resources/:id` | Actualizar los campos enviados |
-| `DELETE` | `/api/resources/:id` | Eliminar un recurso |
+```bash
+npm run test:http
+```
 
-Ejemplo de cuerpo para `POST`:
+Para utilizar otro puerto: `TEST_BASE_URL=http://127.0.0.1:3187 npm run test:http`.
+
+| Comando | Función |
+| --- | --- |
+| `npm run lint` | Análisis estático con ESLint |
+| `npm run typecheck` | Generación de tipos de rutas y comprobación TypeScript |
+| `npm test` | Pruebas de dominio, aplicación, repositorio y serialización |
+| `npm run test:http` | Pruebas de integración de la API contra un servidor local |
+
+Las pruebas TypeScript se compilan en `.test-build/` y se ejecutan con `node:test`. La suite HTTP crea datos temporales y elimina los recursos que genera.
+
+## API
+
+| Método | Ruta | Operación | Respuestas principales |
+| --- | --- | --- | --- |
+| GET | `/api/resources` | Listar por fecha de creación descendente | 200 |
+| POST | `/api/resources` | Publicar un recurso | 201, 400 |
+| GET | `/api/resources/:id` | Consultar un recurso | 200, 404 |
+| PATCH | `/api/resources/:id` | Actualizar parcialmente | 200, 400, 404 |
+| DELETE | `/api/resources/:id` | Eliminar un recurso | 204, 404 |
+
+POST y PATCH reciben objetos JSON. Los cuerpos malformados, `null`, arrays, primitivas y datos que incumplen las reglas producen una respuesta 400. En PATCH, los campos omitidos conservan su valor; un objeto vacío reconstruye el recurso sin cambiar sus datos de negocio y actualiza `updatedAt`.
+
+Ejemplo de publicación de intercambio:
 
 ```json
 {
@@ -96,46 +74,62 @@ Ejemplo de cuerpo para `POST`:
 }
 ```
 
-### Factory Method: `modules/resources/domain/factories`
+## Reglas del recurso
 
-Un recurso se publica en una de tres modalidades, cada una con reglas propias: **donación** (gratis), **intercambio** (exige `wantedInReturn`) y **venta solidaria** (exige `price`, con un tope). `ResourceCreator` define el algoritmo común (validar los campos compartidos y asignar identidad) y delega en el método de fábrica `createResource` la decisión de qué subclase de `Resource` instanciar. `DonationResourceCreator`, `ExchangeResourceCreator` y `SaleResourceCreator` son los creadores concretos. Los casos de uso `CreateResource` y `UpdateResource` solo piden el creador de la modalidad y no conocen las subclases, así que agregar una modalidad (por ejemplo, préstamo) no modifica el código existente.
+| Atributo o modalidad | Restricción |
+| --- | --- |
+| Título | Entre 3 y 80 caracteres |
+| Descripción | Entre 10 y 500 caracteres |
+| Ubicación | Entre 3 y 120 caracteres |
+| Categoría | `clothing`, `electronics`, `furniture`, `books`, `home`, `materials` u `other` |
+| Estado | `available`, `reserved` o `delivered`; `available` por defecto |
+| Donación | Sin precio ni contraprestación |
+| Intercambio | `wantedInReturn` entre 3 y 120 caracteres |
+| Venta solidaria | Precio entero entre 1 y 500.000 COP |
 
-### Singleton: `modules/resources/infrastructure/InMemoryResourceRepository.ts`
+Los textos se validan después de eliminar espacios exteriores. El precio admite un número entero o texto de dígitos decimales con espacios exteriores opcionales; rechaza fracciones, booleanos, arrays y objetos. La construcción no redondea precios.
 
-Mientras no haya base de datos, los recursos se guardan en memoria, y todos los endpoints deben compartir el mismo almacén. Si no fuera así, un recurso creado con `POST` no aparecería en el `GET`. El repositorio tiene constructor privado y solo se obtiene con `getInstance()`. La instancia se guarda en `globalThis` porque el hot reload de `next dev` vuelve a evaluar los módulos y una propiedad estática se perdería en cada recarga. Los datos se pierden al reiniciar el servidor.
+## Arquitectura
 
-## Tecnologías base
+### Motivos de elección
 
-- Next.js con App Router
-- React
-- TypeScript
-- Tailwind CSS
-- ESLint
+Se eligió un monolito modular full-stack con Next.js App Router para mantener la interfaz y la API en un mismo proyecto, compartir tipos y contratos TypeScript y reducir la complejidad inicial del reto. Los Route Handlers permiten integrar la API sin administrar un servidor independiente. El alcance actual no requiere microservicios, colas ni múltiples despliegues.
 
-## Inicio rápido
+La división por módulos y capas separa presentación, coordinación de casos de uso, reglas de negocio y almacenamiento. Esta organización facilita incorporar capacidades de forma gradual. El contrato `ResourceRepository` permite sustituir el almacén temporal por una implementación persistente manteniendo las reglas de construcción en el dominio.
 
-Requisitos: Node.js 20 o superior y npm.
-
-```bash
-npm install
-npm run dev
+```text
+src/app/page.tsx                         Página principal y carga inicial
+src/components/resources/              Formulario, catálogo y tarjetas
+src/app/api/resources/                  Adaptadores HTTP
+src/modules/resources/
+  domain/                              Entidades, contratos y creadores
+  application/                         Casos de uso CRUD
+  infrastructure/                      Almacén en memoria
+  presentation/                        DTO, cliente HTTP y formato
+  resourceModule.ts                    Composición e inyección de dependencias
 ```
 
-Abre [http://localhost:3000](http://localhost:3000).
+Los casos de uso reciben el contrato `ResourceRepository`. La raíz de composición selecciona `InMemoryResourceRepository` e inyecta la instancia compartida. `ResourceSchemas.ts` valida los objetos de entrada con Zod en la capa de aplicación: los campos desconocidos se descartan, los conocidos conservan tipos estrictos y los errores esperados se traducen a `ValidationError`. Los creadores del dominio mantienen las reglas de construcción de cada modalidad. La página obtiene la lista inicial en el servidor y las acciones de la interfaz utilizan la API. El dominio es independiente de React, Next.js y Zod.
 
-## Scripts disponibles
+### Elección de patrones creacionales
 
-```bash
-npm run dev       # Servidor de desarrollo
-npm run lint      # Revisión estática
-npm run build     # Build de producción
-npm run start     # Servidor de producción
-```
+**Factory Method.** Donación, intercambio y venta solidaria comparten atributos, pero requieren productos y reglas específicas. `ResourceCreator` concentra las reglas comunes y la identidad; `createResource` delega la construcción en los creadores concretos. `CreateResource` y `UpdateResource` reutilizan este mecanismo para aplicar las mismas reglas al publicar y editar. Una nueva modalidad puede conservar el algoritmo común, aunque requiere ampliar los tipos, el registro de creadores, los esquemas de entrada y la interfaz.
 
-## Próximos pasos
+**Singleton.** El prototipo almacena publicaciones en memoria. Instancias independientes del repositorio producirían almacenes distintos y podrían impedir que una publicación creada por un consumidor apareciera en las consultas de otro. `InMemoryResourceRepository` expone `getInstance()` y conserva la referencia en `globalThis`; la raíz de composición inyecta esa instancia compartida en los casos de uso. Su unicidad se limita al mismo contexto de ejecución: no proporciona persistencia entre reinicios ni sincronización entre procesos, workers o instancias serverless.
 
-1. Definir las historias de usuario y el modelo de `Resource`.
-2. Crear los casos de uso del módulo `resources`.
-3. Elegir la base de datos y construir los repositorios.
-4. Diseñar las pantallas para explorar y publicar recursos.
-5. Incorporar autenticación, solicitudes de intercambio y moderación.
+El [informe técnico](docs/actividad-4.md) amplía la justificación, los participantes y el alcance de SOLID. Los [diagramas UML](docs/uml/README.md) representan sus clases y relaciones.
+
+## Tecnologías
+
+Next.js 16.3.6, React 19.2.8, TypeScript, Zod 4.6.5, Tailwind CSS 4 y ESLint 9. La interfaz utiliza familias tipográficas del sistema con alternativas explícitas, por lo que la compilación no descarga fuentes externas. La tipografía exacta depende de las fuentes disponibles en cada equipo.
+
+## Alcance y limitaciones
+
+El repositorio en memoria comparte un `Map` dentro del mismo contexto de ejecución mediante `globalThis`. No proporciona persistencia entre reinicios ni sincronización entre procesos, workers o instancias serverless. La aplicación no incluye autenticación ni control de propiedad de publicaciones; su alcance corresponde a un prototipo académico.
+
+## Documentación
+
+- [Informe técnico: arquitectura, patrones creacionales y SOLID](docs/actividad-4.md).
+- [Diagramas de clases UML](docs/uml/README.md).
+- [Registro de pruebas](docs/verificacion.md).
+- [Guion de sustentación](docs/demo.md).

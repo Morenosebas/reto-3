@@ -2,7 +2,7 @@ import { ResourceNotFoundError } from "../domain/errors";
 import { getResourceCreator } from "../domain/factories";
 import type { Resource } from "../domain/Resource";
 import type { ResourceRepository } from "../domain/ResourceRepository";
-import type { ResourceInput } from "./ResourceInput";
+import { parseResourceCreation, parseResourcePatch } from "./ResourceSchemas";
 
 export class UpdateResource {
   constructor(private readonly repository: ResourceRepository) {}
@@ -12,11 +12,12 @@ export class UpdateResource {
    * El recurso se reconstruye con la fábrica de su modalidad (que puede ser
    * otra), así las reglas de validación son las mismas que al crearlo.
    */
-  async execute(id: string, changes: ResourceInput): Promise<Resource> {
+  async execute(id: string, input: unknown): Promise<Resource> {
+    const changes = parseResourcePatch(input);
     const current = await this.repository.findById(id);
     if (!current) throw new ResourceNotFoundError(id);
 
-    const draft = {
+    const merged = {
       title: current.title,
       description: current.description,
       category: current.category,
@@ -24,10 +25,13 @@ export class UpdateResource {
       status: current.status,
       ...current.modalityDetails(),
       ...withoutUndefined(changes),
+      modality: changes.modality ?? current.modality,
     };
 
-    const modality = changes.modality ?? current.modality;
-    const updated = getResourceCreator(modality).create(draft, {
+    // La modalidad completa de destino se valida antes de llamar al creador
+    // o guardar; sus esquemas descartan los detalles de otras modalidades.
+    const draft = parseResourceCreation(merged);
+    const updated = getResourceCreator(draft.modality).create(draft, {
       id: current.id,
       createdAt: current.createdAt,
     });
@@ -37,8 +41,8 @@ export class UpdateResource {
   }
 }
 
-function withoutUndefined(input: ResourceInput): ResourceInput {
+function withoutUndefined<T extends object>(input: T): Partial<T> {
   return Object.fromEntries(
     Object.entries(input).filter(([, value]) => value !== undefined),
-  );
+  ) as Partial<T>;
 }
