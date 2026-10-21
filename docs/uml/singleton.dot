@@ -1,5 +1,5 @@
 digraph Singleton {
- graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.6", ranksep="0.7", label="Reutiliza · Singleton\nRevisión basada en código · 21 octubre 2026", labelloc=t, fontsize=22, fontname="DejaVu Sans"];
+ graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.6", ranksep="0.7", label="Reutiliza · Singleton\nDiagrama de clases", labelloc=t, fontsize=22, fontname="DejaVu Sans"];
  node [shape=record, style=filled, fillcolor="#eef4ff", color="#2440d8", fontname="DejaVu Sans", fontsize=12];
  edge [fontname="DejaVu Sans", fontsize=10, color="#44516d"];
  Interface [label="{ResourceRepository «interface»|+ findAll(): Promise\<Resource[]\>\l+ findById(id: string): Promise\<Resource ∣ null\>\l+ save(resource: Resource): Promise\<void\>\l+ delete(id: string): Promise\<boolean\>\l}"];
@@ -12,7 +12,7 @@ digraph Singleton {
  Module [label="{resourceModule.ts «raíz de composición»|repository = InMemoryResourceRepository.getInstance()\lresourceUseCases: list, get, create, update, delete\l}", fillcolor="#fff5cf"];
  Cases [label="{CreateResource / ListResources / GetResource\nUpdateResource / DeleteResource|− repository: ResourceRepository\l|+ constructor(repository: ResourceRepository)\l+ execute(...): Promise\<...\>\l}"];
  Resource [label="{Resource «abstract»|id: string\l}"];
- Note [shape=note, fillcolor="#f8fafc", label="− privado · + público · subrayado: operación estática\lTriángulo vacío discontinuo: realiza interfaz\lAlmacén único por contexto de ejecución.\lNo persistente, no sincroniza workers ni procesos.\lglobalThis guarda la instancia; no existe campo static instance.\l"];
+ Note [shape=note, fillcolor="#f8fafc", label="− privado · + público · subrayado: operación estática\lTriángulo vacío discontinuo: realiza interfaz\lAlmacén único por contexto de ejecución.\lNo persistente, no sincroniza workers ni procesos.\lReferencia compartida: globalThis.inMemoryResourceRepository.\l"];
  Repository -> Interface [arrowhead=empty, style=dashed, label="implementa"];
  Global -> Repository [arrowhead=vee, label="0..1 instancia"];
  Module -> Repository [style=dashed, label="obtiene"];

@@ -1,86 +1,134 @@
-# Actividad 4 · Reutiliza
+# Reutiliza: arquitectura y patrones creacionales
 
-La solución conserva el CRUD del Reto 3 y aplica **Factory Method y Singleton** a dos problemas distintos: crear recursos con reglas por modalidad y compartir el almacén temporal entre consumidores del mismo runtime. Son exactamente dos patrones creacionales; las tres modalidades no representan tres patrones.
+**PADISOFT · Actividad 4**
 
-## Arquitectura y flujo comprobable
+## 1. Descripción y objetivo
 
-El monolito modular full-stack separa entrada HTTP/UI, aplicación, dominio, infraestructura y presentación. `src/modules/resources/resourceModule.ts` conecta los cinco casos de uso al contrato del repositorio.
+Reutiliza es una plataforma de publicación de objetos, materiales y productos que conservan valor de uso. Permite ofrecer recursos mediante donación, intercambio o venta solidaria y gestionar su ciclo básico de publicación con operaciones de creación, consulta, actualización y eliminación.
 
-1. El formulario envía POST/PATCH mediante `presentation/resourceApi.ts`.
-2. Los Route Handlers interpretan JSON, invocan casos de uso y traducen errores a HTTP.
-3. `CreateResource` o `UpdateResource` seleccionan un creador por modalidad.
-4. El creador valida y construye un producto `Resource` concreto.
-5. El caso de uso guarda a través de `ResourceRepository`; el DTO serializa fechas para la UI.
+El diseño aplica dos patrones creacionales: **Factory Method**, para construir recursos con reglas específicas por modalidad, y **Singleton**, para compartir el repositorio temporal dentro de un contexto de ejecución. Ambos se integran en una arquitectura modular que separa las reglas de negocio de la interfaz y del almacenamiento.
 
-Al actualizar se conservan `id` y `createdAt`; se reconstruye el objeto aplicando otra vez las reglas. Cambiar de modalidad exige los datos de la modalidad nueva. Las pruebas verifican que una actualización inválida no cambia el recurso guardado.
+## 2. Modelo del dominio
 
-## Factory Method: construcción válida por modalidad
+La entidad abstracta `Resource` reúne identidad, título, descripción, categoría, ubicación, estado y fechas de creación y actualización. Las especializaciones representan las condiciones de entrega:
 
-**Problema:** una donación no cobra, un intercambio exige qué recibir a cambio y una venta exige un precio entero dentro del tope solidario. Repetir esas reglas en cada endpoint permitiría diferencias entre crear y editar.
+| Entidad | Modalidad | Regla específica |
+| --- | --- | --- |
+| `DonationResource` | Donación | No contiene precio ni contraprestación |
+| `ExchangeResource` | Intercambio | Requiere `wantedInReturn`, entre 3 y 120 caracteres |
+| `SaleResource` | Venta solidaria | Requiere un precio entero entre 1 y 500.000 COP |
 
-**Solución:** `ResourceCreator.create(draft, identity?)` concentra validación común e identidad; `protected abstract createResource(base, draft)` es el método de fábrica que las subclases implementan. Cada creador devuelve un producto concreto que satisface el contrato abstracto `Resource`.
+Las reglas comunes exigen título de 3–80 caracteres, descripción de 10–500 y ubicación de 3–120, después de recortar espacios exteriores. Categoría y estado deben pertenecer a los valores definidos en `ResourceAttributes.ts`. El estado inicial es `available` cuando no se proporciona otro valor válido.
 
-| Participante | Clase / símbolo | Archivo bajo `src/modules/resources/` |
+Los atributos de las entidades son de solo lectura. Una actualización reconstruye el recurso, conserva `id` y `createdAt`, y asigna `updatedAt`. El cambio de modalidad utiliza las reglas de la modalidad de destino; una actualización inválida no reemplaza el objeto almacenado.
+
+## 3. Arquitectura
+
+La solución es un **monolito modular full-stack** con Next.js App Router. La interfaz y la API comparten tipos TypeScript y se organizan alrededor del módulo `resources`.
+
+| Capa | Responsabilidad | Ubicación |
+| --- | --- | --- |
+| Entrada HTTP | Interpretación de solicitudes, códigos de respuesta y manejo de errores | `src/app/api/resources/` |
+| Interfaz | Formulario, catálogo, filtros y acciones de publicación | `src/components/resources/` |
+| Aplicación | Coordinación de los casos de uso CRUD | `src/modules/resources/application/` |
+| Dominio | Entidades, contratos y reglas de construcción | `src/modules/resources/domain/` |
+| Infraestructura | Implementación del almacenamiento en memoria | `src/modules/resources/infrastructure/` |
+| Presentación del módulo | DTO, cliente HTTP y formatos de visualización | `src/modules/resources/presentation/` |
+| Composición | Selección del repositorio e inyección en los casos de uso | `src/modules/resources/resourceModule.ts` |
+
+### Flujo de creación y actualización
+
+1. La interfaz envía los datos mediante `resourceApi.ts`.
+2. El Route Handler interpreta el objeto JSON e invoca el caso de uso.
+3. `CreateResource` o `UpdateResource` selecciona el creador de la modalidad.
+4. El creador valida los datos y construye una especialización de `Resource`.
+5. El caso de uso guarda el resultado mediante `ResourceRepository`.
+6. `toResourceDTO` transforma la entidad en una representación serializable; las fechas se expresan como cadenas ISO.
+
+Las respuestas HTTP distinguen creación (201), consulta o actualización (200), eliminación (204), entrada inválida (400) y recurso inexistente (404).
+
+## 4. Factory Method
+
+### Problema de diseño
+
+Las tres modalidades comparten atributos, pero tienen condiciones de construcción diferentes. Distribuir estas validaciones entre formularios, endpoints y casos de uso produciría duplicación y permitiría que la creación y la edición aplicaran reglas distintas.
+
+### Decisión e implementación
+
+`ResourceCreator.create(draft, identity?)` define la validación común y la asignación de identidad. El método protegido y abstracto `createResource(base, draft): Resource` constituye el punto de extensión: cada creador concreto decide qué producto instanciar y valida los datos propios de su modalidad.
+
+| Participante | Clase o símbolo | Archivo relativo a `src/modules/resources/` |
 | --- | --- | --- |
 | Creador abstracto | `ResourceCreator` | `domain/factories/ResourceCreator.ts` |
-| Método de fábrica | `createResource(base, draft): Resource` | Mismo archivo; protegido y abstracto |
-| Creadores concretos | `DonationResourceCreator`, `ExchangeResourceCreator`, `SaleResourceCreator` | Archivos homónimos en `domain/factories/` |
+| Método de fábrica | `createResource(base, draft): Resource` | `domain/factories/ResourceCreator.ts` |
+| Creador de donaciones | `DonationResourceCreator` | `domain/factories/DonationResourceCreator.ts` |
+| Creador de intercambios | `ExchangeResourceCreator` | `domain/factories/ExchangeResourceCreator.ts` |
+| Creador de ventas | `SaleResourceCreator` | `domain/factories/SaleResourceCreator.ts` |
 | Producto abstracto | `Resource` | `domain/Resource.ts` |
 | Productos concretos | `DonationResource`, `ExchangeResource`, `SaleResource` | `domain/Resource.ts` |
-| Clientes | `CreateResource`, `UpdateResource` | Archivos homónimos en `application/` |
+| Clientes | `CreateResource`, `UpdateResource` | `application/CreateResource.ts`, `application/UpdateResource.ts` |
 | Selección de creador | `getResourceCreator`, registro `creators` | `domain/factories/index.ts` |
 
-**Reglas concretas:** intercambio requiere `wantedInReturn` de 3–120 caracteres. Venta acepta únicamente un número entero o texto decimal entero entre 1 y 500.000 COP. No hay redondeo que convierta un positivo en cero ni coerción de booleanos/arrays. Donación descarta precio y contraprestación.
+`DonationResourceCreator` construye una donación sin datos adicionales. `ExchangeResourceCreator` valida la contraprestación. `SaleResourceCreator` acepta números enteros o texto decimal entero dentro del rango permitido; rechaza fracciones y conversiones implícitas de booleanos, arrays u objetos.
 
-**OCP, alcance real:** añadir una modalidad puede conservar `ResourceCreator.create()` y ambos casos de uso, pero requiere extender el enum/unión de modalidades, el registro de creadores, etiquetas y estilos de UI. No se promete “cero cambios en código existente”. El registro selecciona implementaciones del Factory Method; no se presenta como un tercer patrón creacional.
+### Justificación y alcance
 
-**Límite:** los constructores concretos son públicos y podrían invocarse evitando la fábrica; el flujo actual de creación y actualización usa los creadores. Las pruebas protegen ese flujo. La solución no necesita una jerarquía adicional ni otro patrón para cumplir el objetivo.
+La variación de productos queda encapsulada en los creadores concretos. Los casos de uso operan con `Resource` y reutilizan la construcción validada tanto al publicar como al editar. El selector permite obtener el creador sin incorporar condiciones de modalidad en cada caso de uso.
 
-## Singleton: almacén temporal compartido
+Una nueva modalidad puede conservar el algoritmo común y los casos de uso existentes, aunque requiere ampliar los tipos de modalidad, el registro de creadores y la presentación correspondiente. Este es el alcance de extensión del diseño; el principio abierto/cerrado no implica que todo el sistema permanezca inalterado.
 
-**Problema:** si cada consumidor construyera un repositorio con un `Map` propio, publicar desde uno y listar desde otro podría mostrar datos distintos.
+Los constructores de los productos concretos son públicos. Por tanto, la aplicación de las reglas depende de utilizar los creadores como vía de construcción en los flujos de negocio, como ocurre en los casos de uso implementados.
 
-**Solución:** `InMemoryResourceRepository` tiene constructor privado y operación de clase `getInstance()`. La referencia se conserva en `globalThis.inMemoryResourceRepository`. La raíz de composición obtiene esa instancia e inyecta el contrato a los casos de uso.
+## 5. Singleton
 
-| Participante | Clase / símbolo | Archivo bajo `src/modules/resources/` |
+### Problema de diseño
+
+Un repositorio en memoria mantiene sus datos en un `Map`. Si cada consumidor dispusiera de una instancia independiente, una publicación creada desde un caso de uso podría no aparecer en las consultas de otro.
+
+### Decisión e implementación
+
+`InMemoryResourceRepository` restringe su construcción mediante un constructor privado y expone la operación estática `getInstance()`. La instancia se conserva en `globalThis.inMemoryResourceRepository`. La raíz de composición obtiene esa referencia y la inyecta en los cinco casos de uso.
+
+| Participante | Clase o símbolo | Archivo relativo a `src/modules/resources/` |
 | --- | --- | --- |
-| Singleton concreto | `InMemoryResourceRepository` | `infrastructure/InMemoryResourceRepository.ts` |
-| Acceso estático | `getInstance(): InMemoryResourceRepository` | Mismo archivo |
-| Estado | `resources: Map<string, Resource>` | Mismo archivo; privado |
-| Inicialización | Constructor privado y `seed()` privado | Mismo archivo |
-| Referencia global | `globalThis.inMemoryResourceRepository?` | Declarada en el mismo módulo; no es campo estático de la clase |
+| Singleton | `InMemoryResourceRepository` | `infrastructure/InMemoryResourceRepository.ts` |
+| Acceso estático | `getInstance(): InMemoryResourceRepository` | `infrastructure/InMemoryResourceRepository.ts` |
+| Estado privado | `resources: Map<string, Resource>` | `infrastructure/InMemoryResourceRepository.ts` |
+| Inicialización | Constructor privado y `seed()` | `infrastructure/InMemoryResourceRepository.ts` |
+| Referencia compartida | `globalThis.inMemoryResourceRepository?` | `infrastructure/InMemoryResourceRepository.ts` |
 | Contrato | `ResourceRepository` | `domain/ResourceRepository.ts` |
 | Composición | `resourceUseCases` | `resourceModule.ts` |
-| Consumidores | Cinco casos de uso CRUD | `application/` |
+| Consumidores | `CreateResource`, `ListResources`, `GetResource`, `UpdateResource`, `DeleteResource` | Archivos homónimos en `application/` |
 
-`findById` devuelve `Promise<Resource | null>`; `save` devuelve `Promise<void>` y `delete`, `Promise<boolean>`. `GetResource` convierte la ausencia en `ResourceNotFoundError`, luego HTTP la transforma en 404.
+El contrato define `findAll(): Promise<Resource[]>`, `findById(id): Promise<Resource | null>`, `save(resource): Promise<void>` y `delete(id): Promise<boolean>`. `GetResource` transforma el resultado nulo en `ResourceNotFoundError`, que la capa HTTP representa mediante el estado 404.
 
-**Alcance y coste:** una instancia por contexto de ejecución compartido. `globalThis` puede sobrevivir a reevaluaciones de módulos dentro de ese contexto, pero no promete sobrevivir a todas las recargas de desarrollo ni comunicar procesos. Reiniciar pierde los datos. No sincroniza workers, múltiples servidores ni funciones serverless. Es un prototipo académico, no persistencia durable.
+### Justificación y alcance
 
-La dependencia global queda confinada a infraestructura/composición; los casos de uso reciben una interfaz. Un repositorio durable futuro implementaría ese contrato y se conectaría en la composición. La inyección explícita de una instancia también permitiría compartirla: Singleton es una elección pedagógica para este prototipo, no la única solución posible.
+El patrón proporciona un punto de acceso a la instancia compartida durante la ejecución del prototipo. La referencia global permite conservarla entre reevaluaciones de módulos que comparten ese contexto. La dependencia concreta queda localizada en infraestructura y composición; los casos de uso reciben la interfaz del repositorio.
 
-## SOLID: evidencia y límites
+La unicidad se limita al contexto de ejecución: no sincroniza procesos, workers, servidores ni instancias serverless. Tampoco proporciona persistencia; al reiniciar se pierden las publicaciones y se cargan nuevamente los ejemplos iniciales. La continuidad ante recargas depende de que se mantenga el mismo contexto global.
 
-| Principio | Evidencia actual | Límite explícito |
+La inyección de una instancia compartida también permitiría resolver la consistencia entre consumidores. Singleton es la alternativa elegida para gestionar el acceso al almacén temporal; un almacenamiento durable puede incorporarse implementando `ResourceRepository` y modificando la raíz de composición.
+
+## 6. Aplicación de SOLID
+
+| Principio | Aplicación en Reutiliza | Alcance y consideraciones |
 | --- | --- | --- |
-| SRP | Casos de uso por operación; entidades y creadores en dominio; HTTP y DTO separados | El repositorio también siembra ejemplos: responsabilidad de inicialización del prototipo |
-| OCP | Variantes mediante subclases; algoritmo común estable | Registro, tipos y UI deben ampliarse al añadir modalidad |
-| LSP | Productos exponen `modalityDetails()`; creadores devuelven `Resource` | Debe preservarse ese contrato en futuras variantes; pruebas actuales cubren las tres |
-| ISP | `ResourceRepository` solo define cuatro operaciones de almacenamiento | Casos de uso individuales usan subconjuntos; separar interfaces si aparecen consumidores con necesidades distintas |
-| DIP | Casos de uso dependen de `ResourceRepository`, recibido por constructor | El selector de creadores sigue siendo una función importada; la composición conoce infraestructura |
+| Responsabilidad única (SRP) | Casos de uso por operación; separación entre entidades, HTTP, DTO e infraestructura | El repositorio incorpora la carga inicial de ejemplos como parte de su inicialización |
+| Abierto/cerrado (OCP) | Nuevos creadores y productos extienden las modalidades sin modificar el algoritmo común | El registro, los tipos y la interfaz requieren la extensión correspondiente |
+| Sustitución de Liskov (LSP) | Los productos exponen el contrato de `Resource`, incluido `modalityDetails()`; los creadores devuelven productos compatibles | Las especializaciones deben conservar ese contrato; las pruebas cubren las tres modalidades actuales |
+| Segregación de interfaces (ISP) | `ResourceRepository` concentra cuatro operaciones de almacenamiento | Cada caso de uso utiliza un subconjunto; una evolución con consumidores distintos puede requerir contratos más específicos |
+| Inversión de dependencias (DIP) | Los casos de uso reciben `ResourceRepository` por constructor | La composición conoce la implementación concreta; la selección de creadores se realiza mediante una función del dominio |
 
-No se afirma cumplimiento perfecto por la existencia de carpetas. Las pruebas y los puntos de dependencia permiten comprobar las decisiones.
+## 7. Diagramas de clases
 
-## UML y documentación
+Los [diagramas UML](uml/README.md) representan los creadores, productos, repositorio, contrato y consumidores del módulo. Las fuentes editables y sus exportaciones SVG se incluyen junto al código.
 
-Las [revisiones UML](uml/README.md) muestran participantes concretos, abstracciones, visibilidad y retornos. Se generaron desde el código porque no se pudieron descargar los `.drawio` aportados. No reemplazan ni modifican esos originales. Las fuentes `.dot` son editables y sus SVG se incluyen para revisión visual.
+- [Factory Method](uml/factory-method.svg): jerarquías de creadores y productos, selección y dependencias de creación.
+- [Singleton](uml/singleton.svg): operación estática, referencia compartida, realización del contrato e inyección en los casos de uso.
 
-## Correspondencia con la rúbrica
+## 8. Validación y limitaciones
 
-| Criterio | Peso | Evidencia que se debe mostrar |
-| --- | --- | --- |
-| Justificación | 20 % | Problema real, decisión, participantes y límites de cada patrón en este documento |
-| UML | 20 % | Dos diagramas y correspondencia exacta con archivos y firmas |
-| Implementación y SOLID | 60 % | CRUD real, fábrica usada al crear/editar, inyección del repositorio, pruebas y casos inválidos |
+El [registro de pruebas](verificacion.md) documenta 42 pruebas de dominio y aplicación, 47 comprobaciones HTTP y una compilación de producción completada con Webpack. Incluye validaciones de las tres modalidades, actualización parcial, errores, conservación de identidad y acceso compartido al repositorio.
 
-El enunciado docente menciona repositorios frontend/backend; aquí ambos están integrados en un único repositorio desde el Reto 3. Esa diferencia sigue pendiente de aclaración. No se declara equivalencia ni se divide el sistema sin una decisión explícita.
+La evidencia disponible cubre reglas y API; no incluye pruebas de interfaz en navegador, accesibilidad o comportamiento entre múltiples procesos. La ausencia de persistencia durable, autenticación y control de propiedad limita el alcance de la aplicación a un prototipo académico.

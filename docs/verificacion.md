@@ -1,42 +1,100 @@
-# Verificación local · 21 de octubre de 2026
+# Registro de pruebas de Reutiliza
 
-Base revisada: `Morenosebas/reto-3`, commit remoto `7a3cf793987ecf43c6fb176ae16e0b2bee9b98b9`. Se preparó una copia aislada y se verificaron los hashes de sus 48 archivos contra GitHub antes de editar. La copia original atrasada en `54040a2` se conserva intacta. Durante esa verificación inicial no se hicieron commits, push, merges ni entrega a Campus. La publicación posterior se propone mediante PR en borrador; el merge queda a cargo del usuario.
+**Fecha de ejecución: 21 de octubre de 2026.**  
+**Referencia de implementación:** [9105e54](https://github.com/Morenosebas/reto-3/commit/9105e5418335690b1b424cbf8bdf769e2a955a8d).
 
-## Correcciones
+## Objetivo y entorno
 
-- Precio: números o texto decimal entero, 1–500000 COP; rechazo de fracciones, booleanos, arrays, objetos, vacíos y valores no finitos. Se elimina el redondeo silencioso.
-- Entrada POST/PATCH: exige objeto JSON; rechaza `null`, arrays y primitivas con `ValidationError` → HTTP 400.
-- Fuentes del sistema con fallback explícito: elimina la descarga de Google Fonts del build. La apariencia tipográfica puede variar según equipo; se conserva el diseño de componentes.
-- Pruebas y documentación versionables; exactamente Factory Method y Singleton, con alcance y límites explícitos.
+La validación comprueba las reglas de construcción de recursos, los casos de uso CRUD, el contrato de entrada, la serialización, la consistencia del repositorio en un contexto de ejecución y las respuestas de la API HTTP.
 
-## Comandos y resultados
-
-Entorno: Node 22.17.0, npm 10.9.2. Dependencias originales instaladas desde caché mediante `npm ci --offline --ignore-scripts --no-audit --no-fund` (con directorios de caché/logs explícitos). No se añadieron dependencias.
-
-| Comando / comprobación | Resultado |
+| Componente | Versión o configuración |
 | --- | --- |
-| `npm run lint` | Correcto |
-| `npm run typecheck` | Correcto: `next typegen` y `tsc --noEmit --incremental false` |
-| `npm test` | 42 pruebas correctas; 0 fallos |
-| `TEST_BASE_URL=http://127.0.0.1:3187 npm run test:http` | 47 comprobaciones HTTP correctas, recursos temporales eliminados |
-| `npm run build` (Turbopack) | Bloqueado por `EPERM` al abrir un puerto interno para procesar CSS, incluso tras el flujo normal de permisos |
-| `npm run build -- --webpack` | Correcto con permisos del ejecutor: compilación, TypeScript, generación de páginas y trazas |
-| `npm run dev -- --hostname 127.0.0.1 --port 3187` | Arrancó tras autorización normal del ejecutor; permitió pruebas HTTP reales |
-| SVG de los dos UML → PNG | Exportados con Graphviz e inspeccionados visualmente |
+| Node.js | 22.17.0 |
+| npm | 10.9.2 |
+| Next.js | 16.3.6 |
+| React | 19.2.8 |
+| Pruebas de dominio y aplicación | TypeScript, `node:test` y `node:assert/strict` |
+| Integración HTTP | Servidor local en `127.0.0.1:3187` |
+| Compilación de producción completada | Webpack |
 
-El primer intento Webpack sin permisos adicionales falló al obtener la configuración de TypeScript desde un proceso hijo; con el flujo normal de permisos terminó correctamente. No se desactivaron comprobaciones TypeScript ni ESLint. Next.js emitió una advertencia sobre un `package-lock.json` ajeno en el directorio padre; no se modificó ese archivo ni configuración global.
+## Metodología
 
-## Qué prueban las suites
+### Dominio y aplicación
 
-`tests/resources.test.ts` verifica los tres productos, CRUD por casos de uso, identidad/fecha conservadas, cambio de modalidad, validaciones y límites, cuerpo JSON, repositorio compartido dentro del runtime, errores por ausencia y DTO. Usa `node:test` y `node:assert/strict`; el compilador ya pertenece al proyecto.
+`tests/resources.test.ts` se compila mediante `tsconfig.test.json` y se ejecuta con el runner de pruebas de Node. Los casos verifican:
 
-`tests/http-smoke.mjs` verifica GET/POST/PATCH/DELETE reales, visibilidad del recurso entre peticiones, respuestas 201/200/204/400/404, JSON malformado y regresiones. Solo admite destino local y limpia los identificadores que creó. Requiere un servidor arrancado; no debe dirigirse a datos reales.
+- Construcción y CRUD de donaciones, intercambios y ventas.
+- Conservación de identidad y fecha de creación durante la actualización.
+- Cambio de modalidad y validación de sus datos específicos.
+- Precio entero dentro de los límites y rechazo de valores o tipos inválidos.
+- Rechazo de cuerpos que no son objetos JSON.
+- Ausencia de cambios en el almacén tras una operación inválida.
+- Identidad compartida del Singleton dentro del mismo contexto de ejecución.
+- Recursos inexistentes y serialización de fechas en el DTO.
 
-## Límites y pendientes
+### Integración HTTP
 
-- **Interfaz no validada en navegador:** no hay navegadores conectados a las herramientas disponibles. No hay capturas de UI ni se afirma haber completado un recorrido visual.
-- La tipografía del sistema debe revisarse visualmente en el equipo de exposición, también en móvil y navegación por teclado.
-- Los `.drawio` originales no pudieron descargarse mediante la transferencia soportada. Se generaron revisiones nuevas `.dot` + SVG sin sobrescribir los originales; sí se inspeccionaron los píxeles de las revisiones.
-- El Singleton sigue siendo memoria temporal por contexto; las pruebas no demuestran persistencia entre reinicios ni consistencia multiproceso.
-- El docente menciona dos repositorios; el proyecto actual usa un monolito full-stack en uno. Pendiente aclaración, sin afirmar equivalencia.
-- Este registro corresponde a la verificación local previa al PR. Antes del merge queda revisar la interfaz en el equipo de entrega. El PR en borrador no constituye aprobación académica ni envío a Campus.
+`tests/http-smoke.mjs` realiza solicitudes GET, POST, PATCH y DELETE contra el servidor local. Verifica la visibilidad de publicaciones entre peticiones, las respuestas 201/200/204/400/404 y el rechazo de JSON malformado o datos inválidos. La suite solo admite destinos locales y elimina los recursos que crea al concluir.
+
+### Análisis estático y compilación
+
+ESLint comprueba el código; `next typegen` y TypeScript validan los tipos y las rutas. La compilación de producción con Webpack incluye la verificación TypeScript, la generación de páginas y las trazas de compilación.
+
+## Resultados
+
+| Comando | Resultado registrado |
+| --- | --- |
+| `npm run lint` | Completado sin errores |
+| `npm run typecheck` | Completado sin errores |
+| `npm test` | 42 pruebas aprobadas; 0 fallos |
+| `TEST_BASE_URL=http://127.0.0.1:3187 npm run test:http` | 47 comprobaciones HTTP aprobadas |
+| `npm run build -- --webpack` | Compilación de producción completada |
+| `npm run build` | Turbopack no completó la compilación: restricción del entorno al abrir un puerto interno de procesamiento CSS (`EPERM`) |
+
+Las comprobaciones de tipos permanecieron activas. El resultado satisfactorio de Webpack corresponde a una compilación completa, no a la omisión del análisis de TypeScript. La restricción de Turbopack caracteriza el entorno evaluado y no permite concluir su compatibilidad con otros entornos.
+
+### Casos representativos
+
+| Entrada o acción | Comportamiento comprobado |
+| --- | --- |
+| Venta de 1 o 500000 COP | Aceptación de los límites |
+| Venta de 0, 0.1, 1.5 o 500001 COP | Rechazo |
+| Precio booleano, array u objeto | Rechazo sin conversión implícita |
+| Intercambio sin contraprestación válida | Rechazo |
+| PATCH con `null`, array o primitiva | Rechazo; HTTP 400 en integración |
+| PATCH con campos omitidos | Conservación de valores anteriores |
+| Actualización inválida | Recurso almacenado sin modificación |
+| Consulta o eliminación de recurso inexistente | Error de ausencia; HTTP 404 en integración |
+| Creación seguida de consulta desde otra petición | Recurso visible en el mismo servidor |
+
+## Reproducción
+
+Desde la raíz del proyecto:
+
+```bash
+npm ci
+npm run lint
+npm run typecheck
+npm test
+npm run build -- --webpack
+```
+
+Para repetir las pruebas HTTP, iniciar el servidor en una terminal:
+
+```bash
+npm run dev -- --hostname 127.0.0.1 --port 3187
+```
+
+En otra terminal:
+
+```bash
+TEST_BASE_URL=http://127.0.0.1:3187 npm run test:http
+```
+
+El entorno debe permitir procesos de compilación y conexiones al servidor local. Las pruebas se ejecutan sobre datos de demostración.
+
+## Alcance de la evidencia
+
+Los resultados respaldan las reglas de negocio, los casos de uso y la integración HTTP dentro de una instancia. No incluyen una evaluación de interfaz en navegador, diseño adaptable, navegación por teclado o accesibilidad. Tampoco comprueban persistencia entre reinicios, sincronización multiproceso, carga o concurrencia distribuida.
+
+El almacenamiento en memoria es deliberadamente temporal. La pérdida de datos al reiniciar y la ausencia de autenticación y control de propiedad forman parte de las limitaciones funcionales del prototipo.

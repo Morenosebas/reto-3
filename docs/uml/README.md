@@ -1,33 +1,43 @@
-# UML · Revisiones basadas en implementación
+# Diagramas de clases UML
 
-Estos diagramas nuevos describen Factory Method y Singleton del código revisado. Se identifican como **revisiones**, porque la descarga soportada de los `.drawio` originales falló. Los originales no se han sobrescrito ni se afirma haber inspeccionado sus píxeles.
+Los diagramas describen los participantes de Factory Method y Singleton y sus relaciones en el módulo de recursos de Reutiliza.
 
-| Patrón | Fuente editable | Exportación |
+| Patrón | Fuente editable | Diagrama |
 | --- | --- | --- |
-| Factory Method | [factory-method-revision.dot](factory-method-revision.dot) | [SVG](factory-method-revision.svg) |
-| Singleton | [singleton-revision.dot](singleton-revision.dot) | [SVG](singleton-revision.svg) |
+| Factory Method | [factory-method.dot](factory-method.dot) | [SVG](factory-method.svg) |
+| Singleton | [singleton.dot](singleton.dot) | [SVG](singleton.svg) |
 
-![Factory Method](factory-method-revision.svg)
+## Factory Method
 
-![Singleton](singleton-revision.svg)
+El creador abstracto establece el método de fábrica y las subclases construyen los productos de cada modalidad. Los casos de uso seleccionan un creador mediante el registro del módulo.
 
-## Regenerar
+![Diagrama de clases de Factory Method](factory-method.svg)
 
-Instalar Graphviz mediante el gestor habitual del equipo y ejecutar desde la raíz:
+## Singleton
+
+El repositorio implementa el contrato de almacenamiento y expone una operación estática para obtener la instancia compartida. La raíz de composición inyecta el repositorio en los casos de uso.
+
+![Diagrama de clases de Singleton](singleton.svg)
+
+## Notación
+
+- `+` indica visibilidad pública; `#`, protegida; y `−`, privada.
+- `«abstract»` identifica una abstracción y `«interface»`, una interfaz.
+- El subrayado de `getInstance()` indica una operación estática.
+- El triángulo vacío con línea continua representa herencia; con línea discontinua, realización de una interfaz.
+- Las flechas discontinuas ordinarias representan dependencias; `«create»` especifica creación de instancias.
+
+`ModalityDetails` abrevia el tipo estructural `{wantedInReturn?: string; price?: number}`. Los atributos de `Resource` son de solo lectura. Sus constructores concretos reciben `BaseResourceProps`; intercambio y venta añaden `wantedInReturn: string` y `price: number`, respectivamente.
+
+Los casos de uso se agrupan para representar su dependencia común. Sus clases y archivos se detallan en el [informe técnico](../actividad-4.md). El retorno de `findById` admite `null`. La referencia compartida del repositorio se almacena en `globalThis`, con alcance limitado al contexto de ejecución.
+
+## Generación de exportaciones
+
+Las fuentes utilizan Graphviz DOT. Desde la raíz del proyecto, con Graphviz instalado:
 
 ```bash
-dot -Tsvg docs/uml/factory-method-revision.dot -o docs/uml/factory-method-revision.svg
-dot -Tsvg docs/uml/singleton-revision.dot -o docs/uml/singleton-revision.svg
+dot -Tsvg docs/uml/factory-method.dot -o docs/uml/factory-method.svg
+dot -Tsvg docs/uml/singleton.dot -o docs/uml/singleton.svg
 ```
 
-Para revisión en píxeles, usar `-Tpng` y abrir el resultado. Las exportaciones PNG de esta revisión se inspeccionaron: texto y flechas legibles, sin recortes. El SVG permite ampliar para leer todas las firmas.
-
-## Convenciones y coherencia
-
-- `+` público, `#` protegido, `−` privado; `«abstract»` indica abstracción.
-- El subrayado identifica `getInstance()` como operación de clase; no se usa la notación incorrecta `$+getInstance()`.
-- Triángulo vacío continuo: herencia. Discontinuo: realización de interfaz. Flechas discontinuas ordinarias: dependencia/creación.
-- `ModalityDetails` es una abreviatura visual del tipo estructural `{wantedInReturn?: string; price?: number}`, no una clase añadida al código.
-- Los atributos de `Resource` son de solo lectura. Los constructores concretos reciben `BaseResourceProps`; los de intercambio/venta también reciben `string`/`number`, respectivamente.
-- Algunos clientes se agrupan para facilitar la lectura; sus clases y archivos se detallan en [Actividad 4](../actividad-4.md).
-- `findById` conserva el retorno nullable. La referencia única está en `globalThis`, no en una propiedad estática `instance` inexistente.
+El formato SVG conserva la legibilidad al ampliar el diagrama. Graphviz también permite exportar a PNG mediante la opción `-Tpng`.

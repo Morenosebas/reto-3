@@ -1,5 +1,5 @@
 digraph FactoryMethod {
- graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.5", ranksep="0.65", label="Reutiliza · Factory Method\nRevisión basada en código · 21 octubre 2026", labelloc=t, fontsize=22, fontname="DejaVu Sans"];
+ graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.5", ranksep="0.65", label="Reutiliza · Factory Method\nDiagrama de clases", labelloc=t, fontsize=22, fontname="DejaVu Sans"];
  node [shape=record, style=filled, fillcolor="#eef4ff", color="#2440d8", fontname="DejaVu Sans", fontsize=11];
  edge [fontname="DejaVu Sans", fontsize=10, color="#44516d"];
  Creator [label="{ResourceCreator «abstract»|+ create(draft: ResourceDraft, identity?: ResourceIdentity): Resource\l# createResource(base: BaseResourceProps, draft: ResourceDraft): Resource «abstract»\l}"];

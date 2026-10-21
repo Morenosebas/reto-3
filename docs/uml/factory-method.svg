@@ -10,7 +10,7 @@
 <title>FactoryMethod</title>
 <polygon fill="white" stroke="transparent" points="-25.2,25.2 -25.2,-587.2 1828.2,-587.2 1828.2,25.2 -25.2,25.2"/>
 <text text-anchor="middle" x="901.5" y="-540.4" font-family="DejaVu Sans" font-size="22.00">Reutiliza · Factory Method</text>
-<text text-anchor="middle" x="901.5" y="-516.4" font-family="DejaVu Sans" font-size="22.00">Revisión basada en código · 21 octubre 2026</text>
+<text text-anchor="middle" x="901.5" y="-516.4" font-family="DejaVu Sans" font-size="22.00">Diagrama de clases</text>
 <!-- Creator -->
 <g id="node1" class="node">
 <title>Creator</title>

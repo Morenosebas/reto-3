@@ -1,39 +1,67 @@
-# Reutiliza · PADISOFT
+# Reutiliza
 
-Reutiliza permite publicar, consultar, editar y eliminar recursos para **donación, intercambio y venta solidaria**. Continúa el Reto 3 como un **monolito modular full-stack**: interfaz React y API Next.js viven en este repositorio. La Actividad 4 documenta exactamente dos patrones creacionales: **Factory Method y Singleton**.
+Plataforma para publicar, consultar, editar y eliminar recursos destinados a **donación, intercambio y venta solidaria**. La aplicación integra una interfaz React y una API HTTP mediante un monolito modular con Next.js. El módulo de recursos implementa los patrones creacionales **Factory Method** y **Singleton**.
 
-## Ejecutar y verificar
+## Requisitos e instalación
 
-Requisitos: Node.js **20.9 o superior** y npm. La verificación local se realizó con Node 22.17.0. Desde la raíz:
+- Node.js 20.9 o superior.
+- npm y acceso al registro de paquetes, o una caché completa de dependencias.
 
 ```bash
 npm ci
+npm run dev
+```
+
+La aplicación está disponible en `http://localhost:3000`. Al iniciar el servidor se cargan tres publicaciones de ejemplo: una donación, un intercambio y una venta.
+
+## Uso
+
+El formulario permite seleccionar una modalidad, completar los datos del recurso y publicarlo. El catálogo muestra las publicaciones y permite filtrarlas por modalidad. Cada tarjeta ofrece acciones para editar y eliminar el recurso; la edición también permite actualizar su estado.
+
+Las publicaciones se almacenan en memoria. Al reiniciar el servidor se pierden los cambios y se restauran los ejemplos iniciales.
+
+## Compilación y pruebas
+
+```bash
 npm run lint
 npm run typecheck
 npm test
-npm run build
+npm run build -- --webpack
 npm run start
 ```
 
-Si Turbopack está limitado por el entorno, Next.js permite compilar con `npm run build -- --webpack`; esta alternativa pasó la verificación local. Ver [resultados y restricciones](docs/verificacion.md).
+El comando de compilación anterior utiliza Webpack, con el que se completó la validación de producción. `npm run build` utiliza Turbopack de forma predeterminada; las condiciones del entorno evaluado y los resultados se detallan en el [registro de pruebas](docs/verificacion.md).
 
-Para desarrollar: `npm run dev` y abrir `http://localhost:3000`. Para probar la API contra ese servidor: `npm run test:http`. Otro puerto local: `TEST_BASE_URL=http://127.0.0.1:3187 npm run test:http`.
+Con un servidor local en ejecución:
 
-`npm test` compila las pruebas TypeScript a `.test-build/` y ejecuta el runner incorporado de Node, sin añadir dependencias. Cubre dominio, casos de uso, contrato de entrada, repositorio y serialización. `test:http` comprueba rutas HTTP reales; crea y elimina únicamente sus propios recursos de prueba. Ninguno sustituye una prueba de interfaz en navegador.
+```bash
+npm run test:http
+```
 
-El proyecto usa Next.js 16.3.6, React 19.2.8, TypeScript, Tailwind CSS 4 y ESLint 9. Las fuentes se resuelven con familias del sistema y fallbacks explícitos: la compilación no descarga Google Fonts. Se conservan colores, tarjetas, distribución y animaciones; la tipografía exacta depende del equipo. Una instalación nueva de dependencias sí requiere red o una caché npm completa.
+Para utilizar otro puerto: `TEST_BASE_URL=http://127.0.0.1:3187 npm run test:http`.
 
-## API y reglas
+| Comando | Función |
+| --- | --- |
+| `npm run lint` | Análisis estático con ESLint |
+| `npm run typecheck` | Generación de tipos de rutas y comprobación TypeScript |
+| `npm test` | Pruebas de dominio, aplicación, repositorio y serialización |
+| `npm run test:http` | Pruebas de integración de la API contra un servidor local |
 
-| Método | Ruta | Resultado |
-| --- | --- | --- |
-| GET | `/api/resources` | Lista ordenada por fecha de creación, 200 |
-| POST | `/api/resources` | Crea recurso, 201 |
-| GET | `/api/resources/:id` | Consulta recurso, 200 / 404 |
-| PATCH | `/api/resources/:id` | Actualización parcial, 200 / 400 / 404 |
-| DELETE | `/api/resources/:id` | Elimina recurso, 204 / 404 |
+Las pruebas TypeScript se compilan en `.test-build/` y se ejecutan con `node:test`. La suite HTTP crea datos temporales y elimina los recursos que genera.
 
-POST y PATCH requieren un objeto JSON: `null`, arrays y primitivas devuelven 400. Un PATCH `{}` conserva los campos y reconstruye el recurso, actualizando `updatedAt`. Los campos omitidos conservan su valor. JSON malformado y validaciones fallidas devuelven 400.
+## API
+
+| Método | Ruta | Operación | Respuestas principales |
+| --- | --- | --- | --- |
+| GET | `/api/resources` | Listar por fecha de creación descendente | 200 |
+| POST | `/api/resources` | Publicar un recurso | 201, 400 |
+| GET | `/api/resources/:id` | Consultar un recurso | 200, 404 |
+| PATCH | `/api/resources/:id` | Actualizar parcialmente | 200, 400, 404 |
+| DELETE | `/api/resources/:id` | Eliminar un recurso | 204, 404 |
+
+POST y PATCH reciben objetos JSON. Los cuerpos malformados, `null`, arrays, primitivas y datos que incumplen las reglas producen una respuesta 400. En PATCH, los campos omitidos conservan su valor; un objeto vacío reconstruye el recurso sin cambiar sus datos de negocio y actualiza `updatedAt`.
+
+Ejemplo de publicación de intercambio:
 
 ```json
 {
@@ -46,39 +74,48 @@ POST y PATCH requieren un objeto JSON: `null`, arrays y primitivas devuelven 400
 }
 ```
 
-- Campos comunes: título de 3–80 caracteres, descripción de 10–500, ubicación de 3–120, categoría válida y estado válido. Se recortan espacios de textos.
-- Donación: no tiene precio ni contraprestación; ignora esos datos adicionales.
-- Intercambio: `wantedInReturn` de 3–120 caracteres.
-- Venta: **pesos enteros entre 1 y 500.000 COP**, como número o texto de dígitos decimales (se permiten espacios exteriores). No se redondean fracciones ni se convierten booleanos, arrays u objetos.
-- Estados: `available`, `reserved`, `delivered`. Crear asigna `available` cuando se omite el estado.
+## Reglas del recurso
 
-## Arquitectura implementada
+| Atributo o modalidad | Restricción |
+| --- | --- |
+| Título | Entre 3 y 80 caracteres |
+| Descripción | Entre 10 y 500 caracteres |
+| Ubicación | Entre 3 y 120 caracteres |
+| Categoría | `clothing`, `electronics`, `furniture`, `books`, `home`, `materials` u `other` |
+| Estado | `available`, `reserved` o `delivered`; `available` por defecto |
+| Donación | Sin precio ni contraprestación |
+| Intercambio | `wantedInReturn` entre 3 y 120 caracteres |
+| Venta solidaria | Precio entero entre 1 y 500.000 COP |
+
+Los textos se validan después de eliminar espacios exteriores. El precio admite un número entero o texto de dígitos decimales con espacios exteriores opcionales; rechaza fracciones, booleanos, arrays y objetos. La construcción no redondea precios.
+
+## Arquitectura
 
 ```text
-src/app/page.tsx                         Entrada de la interfaz / carga inicial
-src/components/resources/              Formulario, tarjetas y gestión de UI
-src/app/api/resources/                  Adaptadores HTTP de colección y recurso
+src/app/page.tsx                         Página principal y carga inicial
+src/components/resources/              Formulario, catálogo y tarjetas
+src/app/api/resources/                  Adaptadores HTTP
 src/modules/resources/
-  domain/                              Entidades, contratos, reglas y Factory Method
-  application/                         Cinco casos de uso CRUD e interpretación de entrada
-  infrastructure/                      Repositorio Singleton en memoria
-  presentation/                        DTO, cliente HTTP, etiquetas y formato
-  resourceModule.ts                    Raíz de composición e inyección
+  domain/                              Entidades, contratos y creadores
+  application/                         Casos de uso CRUD
+  infrastructure/                      Almacén en memoria
+  presentation/                        DTO, cliente HTTP y formato
+  resourceModule.ts                    Composición e inyección de dependencias
 ```
 
-Los casos de uso reciben el contrato `ResourceRepository`; la implementación concreta se selecciona en `resourceModule.ts`. La página carga la lista inicial en servidor; las acciones de la UI usan la API. El dominio no importa React ni Next.js.
+Los casos de uso reciben el contrato `ResourceRepository`. La raíz de composición selecciona `InMemoryResourceRepository` e inyecta la instancia compartida. La página obtiene la lista inicial en el servidor y las acciones de la interfaz utilizan la API. El dominio es independiente de React y Next.js.
 
-## Documentación de Actividad 4
+## Tecnologías
 
-- [Arquitectura, SOLID y justificación de los dos patrones](docs/actividad-4.md).
-- [UML editable y exportaciones revisadas](docs/uml/README.md).
-- [Guion de demostración de 12 minutos](docs/demo.md).
-- [Resultados y límites de la verificación local](docs/verificacion.md).
+Next.js 16.3.6, React 19.2.8, TypeScript, Tailwind CSS 4 y ESLint 9. La interfaz utiliza familias tipográficas del sistema con alternativas explícitas, por lo que la compilación no descarga fuentes externas. La tipografía exacta depende de las fuentes disponibles en cada equipo.
 
-## Límites del prototipo y entrega
+## Alcance y limitaciones
 
-El almacén es un `Map` en memoria compartido dentro del mismo contexto de ejecución mediante `globalThis`. Reiniciar restaura tres ejemplos; no hay base de datos, sincronización entre procesos ni garantía entre workers o instancias serverless. No hay autenticación ni propiedad de publicaciones: esta demo no está preparada para producción pública.
+El repositorio en memoria comparte un `Map` dentro del mismo contexto de ejecución mediante `globalThis`. No proporciona persistencia entre reinicios ni sincronización entre procesos, workers o instancias serverless. La aplicación no incluye autenticación ni control de propiedad de publicaciones; su alcance corresponde a un prototipo académico.
 
-La indicación docente menciona repositorios frontend y backend. Este proyecto contiene ambos componentes en **un solo repositorio**. No se afirma que eso equivalga al requisito de dos repositorios: debe aclararse con el docente antes de la entrega. No se ha dividido el proyecto ni creado un segundo repositorio.
+## Documentación
 
-Según los requisitos aportados: exactamente dos patrones, UML coherente, documentación Markdown/PDF, máximo tres integrantes y exposición de 10–15 minutos. La entrega indicada es el enlace en Campus el 21 de octubre a las 20:00 de Colombia. Esta preparación local no constituye una entrega ni publica cambios.
+- [Informe técnico: arquitectura, patrones creacionales y SOLID](docs/actividad-4.md).
+- [Diagramas de clases UML](docs/uml/README.md).
+- [Registro de pruebas](docs/verificacion.md).
+- [Guion de sustentación](docs/demo.md).
