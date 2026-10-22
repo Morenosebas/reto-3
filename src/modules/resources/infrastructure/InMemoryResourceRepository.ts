@@ -20,7 +20,6 @@ const globalForRepository = globalThis as typeof globalThis & {
 export class InMemoryResourceRepository implements ResourceRepository {
   private readonly resources = new Map<string, Resource>();
 
-  // Constructor privado: la única forma de obtener el repositorio es getInstance().
   private constructor() {}
 
   static getInstance(): InMemoryResourceRepository {

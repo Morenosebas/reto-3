@@ -5,7 +5,6 @@ import type {
   ResourceStatus,
 } from "../domain/ResourceAttributes";
 
-/** Forma serializable de un recurso, compartida por la API y la interfaz. */
 export interface ResourceDTO {
   id: string;
   modality: ResourceModality;

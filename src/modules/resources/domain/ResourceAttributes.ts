@@ -1,4 +1,3 @@
-// Valores válidos de los atributos de un recurso.
 // Se mantienen sin dependencias para poder compartirlos con la interfaz.
 
 export const RESOURCE_MODALITIES = ["donation", "exchange", "sale"] as const;

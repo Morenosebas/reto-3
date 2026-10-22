@@ -5,7 +5,6 @@ import { errorResponse, readJsonBody } from "../http";
 
 type Context = RouteContext<"/api/resources/[id]">;
 
-// GET /api/resources/:id: consulta un recurso
 export async function GET(_request: NextRequest, ctx: Context) {
   try {
     const { id } = await ctx.params;
@@ -16,7 +15,6 @@ export async function GET(_request: NextRequest, ctx: Context) {
   }
 }
 
-// PATCH /api/resources/:id: actualiza los campos enviados
 export async function PATCH(request: NextRequest, ctx: Context) {
   try {
     const { id } = await ctx.params;
@@ -28,7 +26,6 @@ export async function PATCH(request: NextRequest, ctx: Context) {
   }
 }
 
-// DELETE /api/resources/:id: elimina un recurso
 export async function DELETE(_request: NextRequest, ctx: Context) {
   try {
     const { id } = await ctx.params;

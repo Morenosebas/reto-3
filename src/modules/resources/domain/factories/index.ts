@@ -13,7 +13,6 @@ const creators: Record<ResourceModality, ResourceCreator> = {
   sale: new SaleResourceCreator(),
 };
 
-/** Devuelve el creador concreto que corresponde a la modalidad pedida. */
 export function getResourceCreator(modality: unknown): ResourceCreator {
   if (!RESOURCE_MODALITIES.includes(modality as ResourceModality)) {
     throw new ValidationError("La modalidad debe ser donación, intercambio o venta");

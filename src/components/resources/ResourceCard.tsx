@@ -74,7 +74,6 @@ export function ResourceCard({
           <dd className="font-bold">{resource.location}</dd>
         </dl>
 
-        {/* Línea de corte, como en una etiqueta de precio */}
         <div className="mt-5 border-t-2 border-dashed border-tag-ink/35 pt-4">
           <p className="font-display text-2xl font-extrabold leading-tight [font-stretch:80%]">
             {modalityValue(resource)}

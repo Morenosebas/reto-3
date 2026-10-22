@@ -6,10 +6,10 @@
   --font-atkinson: system-ui, "Segoe UI", Arial, sans-serif;
   --font-anybody: "Arial Narrow", "Liberation Sans Narrow", Impact, sans-serif;
   color-scheme: light;
-  --paper: #ffffff; /* fondo de la página */
-  --sheet: #ffffff; /* superficie del formulario */
+  --paper: #ffffff;
+  --sheet: #ffffff;
   --field: #f1f3f7; /* tinte suave para que los campos se distingan sobre blanco */
-  --ink: #1b2340; /* tinta de bolígrafo */
+  --ink: #1b2340;
   --ink-soft: #4d5675;
   --pen: #2440d8; /* azul bolígrafo: acciones */
   --pen-hover: #1a31ad;

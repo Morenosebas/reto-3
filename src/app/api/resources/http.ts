@@ -1,6 +1,5 @@
 import { ResourceNotFoundError, ValidationError } from "@/modules/resources/domain/errors";
 
-// Utilidades HTTP compartidas por los endpoints de recursos.
 // No es un route.ts, así que Next.js no lo expone como ruta.
 
 export async function readJsonBody(request: Request): Promise<unknown> {

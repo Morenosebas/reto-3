@@ -2,7 +2,6 @@ import { toResourceDTO } from "@/modules/resources/presentation/ResourceDTO";
 import { resourceUseCases } from "@/modules/resources/resourceModule";
 import { errorResponse, readJsonBody } from "./http";
 
-// GET /api/resources: lista todos los recursos
 export async function GET() {
   try {
     const resources = await resourceUseCases.list.execute();
@@ -12,7 +11,6 @@ export async function GET() {
   }
 }
 
-// POST /api/resources: publica un recurso nuevo
 export async function POST(request: Request) {
   try {
     const input = await readJsonBody(request);

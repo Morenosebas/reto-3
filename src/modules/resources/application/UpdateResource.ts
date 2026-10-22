@@ -28,8 +28,6 @@ export class UpdateResource {
       modality: changes.modality ?? current.modality,
     };
 
-    // La modalidad completa de destino se valida antes de llamar al creador
-    // o guardar; sus esquemas descartan los detalles de otras modalidades.
     const draft = parseResourceCreation(merged);
     const updated = getResourceCreator(draft.modality).create(draft, {
       id: current.id,

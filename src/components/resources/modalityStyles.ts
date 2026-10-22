@@ -1,7 +1,5 @@
 import type { ResourceModality } from "@/modules/resources/domain/ResourceAttributes";
 
-// Cada modalidad tiene su color de sticker; se usa en etiquetas, filtros y formulario.
-
 export const MODALITY_FILL: Record<ResourceModality, string> = {
   donation: "bg-tag-donation",
   exchange: "bg-tag-exchange",

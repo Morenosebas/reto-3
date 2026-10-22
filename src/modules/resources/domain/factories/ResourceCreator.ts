@@ -21,7 +21,6 @@ export interface ResourceDraft {
   price?: unknown;
 }
 
-/** Identidad que se conserva cuando se reconstruye un recurso existente. */
 export interface ResourceIdentity {
   id: string;
   createdAt: Date;
@@ -36,7 +35,6 @@ export interface ResourceIdentity {
  * nueva consiste en escribir otro creador, sin modificar este código.
  */
 export abstract class ResourceCreator {
-  /** Factory Method: cada creador concreto decide qué producto construir. */
   protected abstract createResource(
     base: BaseResourceProps,
     draft: ResourceDraft,

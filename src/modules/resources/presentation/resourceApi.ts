@@ -1,7 +1,5 @@
 import type { ResourceDTO } from "./ResourceDTO";
 
-// Cliente HTTP del módulo para los componentes de la interfaz.
-
 export type ResourcePayload = Partial<
   Omit<ResourceDTO, "id" | "createdAt" | "updatedAt" | "price">
 > & { price?: number | string };

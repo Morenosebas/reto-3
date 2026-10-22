@@ -40,7 +40,6 @@ export function ResourceManager({ initialResources }: { initialResources: Resour
       const created = await resourceApi.create(payload);
       setResources((current) => [created, ...current]);
       setJustSavedId(created.id);
-      // Si el filtro ocultaría lo recién publicado, se muestran todos.
       setFilter((current) => (current === "all" || current === created.modality ? current : "all"));
     }
   }
@@ -60,7 +59,6 @@ export function ResourceManager({ initialResources }: { initialResources: Resour
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,23rem)_1fr] lg:items-start lg:gap-14">
       <div className="lg:sticky lg:top-6">
-        {/* La key reinicia el formulario al cambiar entre publicar y editar */}
         <ResourceForm
           key={editing?.id ?? "new"}
           resource={editing ?? undefined}

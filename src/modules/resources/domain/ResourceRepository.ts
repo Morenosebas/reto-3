@@ -1,6 +1,5 @@
 import type { Resource } from "./Resource";
 
-/** Contrato de persistencia. La implementación vive en infrastructure. */
 export interface ResourceRepository {
   findAll(): Promise<Resource[]>;
   findById(id: string): Promise<Resource | null>;
