@@ -15,7 +15,7 @@ El creador abstracto establece el método de fábrica y las subclases construyen
 
 ## Singleton
 
-El repositorio implementa el contrato de almacenamiento y expone una operación estática para obtener la instancia compartida. La raíz de composición inyecta el repositorio en los casos de uso.
+El repositorio implementa el contrato de almacenamiento y expone una operación estática para obtener la instancia compartida. La raíz de composición inyecta el repositorio en los casos de uso. Los datos de demostración se cargan desde un script separado mediante la API, no desde el repositorio.
 
 ![Diagrama de clases de Singleton](singleton.svg)
 

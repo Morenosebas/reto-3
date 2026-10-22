@@ -21,6 +21,10 @@ const get = new GetResource(repository);
 const update = new UpdateResource(repository);
 const remove = new DeleteResource(repository);
 
+test("el repositorio inicia vacío; las muestras se cargan por separado", async () => {
+  assert.deepEqual(await repository.findAll(), []);
+});
+
 test("Singleton conserva identidad y recursos entre consumidores del mismo runtime", async () => {
   const second = InMemoryResourceRepository.getInstance();
   assert.equal(repository, second);

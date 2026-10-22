@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit --incremental false",
-    "test": "tsc -p tsconfig.test.json && node .test-build/tests/resources.test.js",
+    "test": "tsc -p tsconfig.test.json && node .test-build/tests/resources.test.js && node --test tests/seed-resources.test.mjs",
+    "seed": "node scripts/seed-resources.mjs",
     "test:http": "node tests/http-smoke.mjs"
   },
   "dependencies": {

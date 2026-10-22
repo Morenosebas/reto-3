@@ -88,7 +88,13 @@ Una nueva modalidad puede conservar el algoritmo común y los casos de uso exist
 
 Los constructores de los productos concretos son públicos. Por tanto, la aplicación de las reglas depende de utilizar los creadores como vía de construcción en los flujos de negocio, como ocurre en los casos de uso implementados.
 
-## 5. Singleton
+## 5. Carga de datos de demostración
+
+El repositorio no crea publicaciones de ejemplo: su constructor solo inicializa el `Map`. `scripts/seed-resources.mjs` es un comando independiente que consulta `GET /api/resources` y envía por `POST` las muestras que todavía no existen. Se ejecuta con `npm run seed` mientras el servidor está levantado.
+
+El script usa la API en lugar de instanciar el repositorio directamente porque Node lo ejecuta en otro proceso; el `Map` vive dentro del proceso servidor y no sería compartido. La comprobación de muestras existentes permite repetir el comando sin duplicar los ejemplos intactos. Al reiniciar el servidor, el almacenamiento en memoria se vacía y el script se puede ejecutar de nuevo.
+
+## 6. Singleton
 
 ### Problema de diseño
 
@@ -103,7 +109,7 @@ Un repositorio en memoria mantiene sus datos en un `Map`. Si cada consumidor dis
 | Singleton | `InMemoryResourceRepository` | `infrastructure/InMemoryResourceRepository.ts` |
 | Acceso estático | `getInstance(): InMemoryResourceRepository` | `infrastructure/InMemoryResourceRepository.ts` |
 | Estado privado | `resources: Map<string, Resource>` | `infrastructure/InMemoryResourceRepository.ts` |
-| Inicialización | Constructor privado y `seed()` | `infrastructure/InMemoryResourceRepository.ts` |
+| Inicialización | Constructor privado, sin carga de datos | `infrastructure/InMemoryResourceRepository.ts` |
 | Referencia compartida | `globalThis.inMemoryResourceRepository?` | `infrastructure/InMemoryResourceRepository.ts` |
 | Contrato | `ResourceRepository` | `domain/ResourceRepository.ts` |
 | Composición | `resourceUseCases` | `resourceModule.ts` |
@@ -115,28 +121,28 @@ El contrato define `findAll(): Promise<Resource[]>`, `findById(id): Promise<Reso
 
 El patrón proporciona un punto de acceso a la instancia compartida durante la ejecución del prototipo. La referencia global permite conservarla entre reevaluaciones de módulos que comparten ese contexto. La dependencia concreta queda localizada en infraestructura y composición; los casos de uso reciben la interfaz del repositorio.
 
-La unicidad se limita al contexto de ejecución: no sincroniza procesos, workers, servidores ni instancias serverless. Tampoco proporciona persistencia; al reiniciar se pierden las publicaciones y se cargan nuevamente los ejemplos iniciales. La continuidad ante recargas depende de que se mantenga el mismo contexto global.
+La unicidad se limita al contexto de ejecución: no sincroniza procesos, workers, servidores ni instancias serverless. Tampoco proporciona persistencia; al reiniciar se pierden las publicaciones. Los ejemplos se pueden volver a cargar ejecutando el script de demostración. La continuidad ante recargas depende de que se mantenga el mismo contexto global.
 
 La inyección de una instancia compartida también permitiría resolver la consistencia entre consumidores. Singleton es la alternativa elegida para gestionar el acceso al almacén temporal; un almacenamiento durable puede incorporarse implementando `ResourceRepository` y modificando la raíz de composición.
 
-## 6. Aplicación de SOLID
+## 7. Aplicación de SOLID
 
 | Principio | Aplicación en Reutiliza | Alcance y consideraciones |
 | --- | --- | --- |
-| Responsabilidad única (SRP) | Casos de uso por operación; separación entre entidades, HTTP, DTO e infraestructura | El repositorio incorpora la carga inicial de ejemplos como parte de su inicialización |
+| Responsabilidad única (SRP) | Casos de uso por operación; separación entre entidades, HTTP, DTO e infraestructura | La carga de datos demo se realiza mediante un script separado del repositorio |
 | Abierto/cerrado (OCP) | Nuevos creadores y productos extienden las modalidades sin modificar el algoritmo común | El registro, los tipos y la interfaz requieren la extensión correspondiente |
 | Sustitución de Liskov (LSP) | Los productos exponen el contrato de `Resource`, incluido `modalityDetails()`; los creadores devuelven productos compatibles | Las especializaciones deben conservar ese contrato; las pruebas cubren las tres modalidades actuales |
 | Segregación de interfaces (ISP) | `ResourceRepository` concentra cuatro operaciones de almacenamiento | Cada caso de uso utiliza un subconjunto; una evolución con consumidores distintos puede requerir contratos más específicos |
 | Inversión de dependencias (DIP) | Los casos de uso reciben `ResourceRepository` por constructor | La composición conoce la implementación concreta; la selección de creadores se realiza mediante una función del dominio |
 
-## 7. Diagramas de clases
+## 8. Diagramas de clases
 
 Los [diagramas UML](uml/README.md) representan los creadores, productos, repositorio, contrato y consumidores del módulo. Las fuentes editables y sus exportaciones SVG se incluyen junto al código.
 
 - [Factory Method](uml/factory-method.svg): jerarquías de creadores y productos, selección y dependencias de creación.
 - [Singleton](uml/singleton.svg): operación estática, referencia compartida, realización del contrato e inyección en los casos de uso.
 
-## 8. Validación y limitaciones
+## 9. Validación y limitaciones
 
 El [registro de pruebas](verificacion.md) documenta pruebas de dominio y aplicación, comprobaciones HTTP y una compilación de producción completada con Webpack. Incluye esquemas Zod, validaciones de las tres modalidades, actualización parcial, errores, conservación de identidad y acceso compartido al repositorio.
 

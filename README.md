@@ -16,13 +16,13 @@ npm ci
 npm run dev
 ```
 
-La aplicación está disponible en `http://localhost:3000`. Al iniciar el servidor se cargan tres publicaciones de ejemplo: una donación, un intercambio y una venta.
+La aplicación está disponible en `http://localhost:3000`. Para cargar las tres publicaciones de demostración, primero inicia el servidor y luego ejecuta `npm run seed` en otra terminal. El script consulta la API y omite las muestras que ya existen.
 
 ## Uso
 
 El formulario permite seleccionar una modalidad, completar los datos del recurso y publicarlo. El catálogo muestra las publicaciones y permite filtrarlas por modalidad. Cada tarjeta ofrece acciones para editar y eliminar el recurso; la edición también permite actualizar su estado.
 
-Las publicaciones se almacenan en memoria. Al reiniciar el servidor se pierden los cambios y se restauran los ejemplos iniciales.
+Las publicaciones se almacenan en memoria. Al reiniciar el servidor se pierden los cambios; ejecuta `npm run seed` otra vez si quieres volver a cargar los ejemplos.
 
 ## Compilación y pruebas
 
@@ -48,8 +48,9 @@ Para utilizar otro puerto: `TEST_BASE_URL=http://127.0.0.1:3187 npm run test:htt
 | --- | --- |
 | `npm run lint` | Análisis estático con ESLint |
 | `npm run typecheck` | Generación de tipos de rutas y comprobación TypeScript |
-| `npm test` | Pruebas de dominio, aplicación, repositorio y serialización |
+| `npm test` | Pruebas de dominio, aplicación, repositorio, serialización y seed |
 | `npm run test:http` | Pruebas de integración de la API contra un servidor local |
+| `npm run seed` | Carga muestras de demostración mediante la API local activa |
 
 Las pruebas TypeScript se compilan en `.test-build/` y se ejecutan con `node:test`. La suite HTTP crea datos temporales y elimina los recursos que genera.
 
