@@ -21,7 +21,6 @@ function modalityValue(resource: ResourceDTO): string {
 interface ResourceCardProps {
   resource: ResourceDTO;
   isEditing: boolean;
-  /** Recién publicado o editado: entra con la animación de colgarse. */
   justSaved: boolean;
   onEdit: () => void;
   onDelete: () => void;
@@ -39,7 +38,6 @@ export function ResourceCard({
   const isDelivered = resource.status === "delivered";
 
   return (
-    // El filtro va en el contenedor porque el recorte de la etiqueta cortaría la sombra.
     <div
       onAnimationEnd={onAnimationEnd}
       className={`mb-6 break-inside-avoid transition-[filter,translate] duration-200 ${

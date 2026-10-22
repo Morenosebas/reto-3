@@ -67,11 +67,6 @@ const commonCreationFields = {
     .optional(),
 };
 
-/**
- * Cada modalidad exige sus datos propios. Los detalles conocidos de otras
- * modalidades también se validan si llegan, pero no se guardan en el producto.
- * Los campos desconocidos se descartan con el comportamiento de z.object.
- */
 export const resourceCreationSchema = z.discriminatedUnion("modality", [
   z.object({
     ...commonCreationFields,
@@ -93,11 +88,6 @@ export const resourceCreationSchema = z.discriminatedUnion("modality", [
   }),
 ]);
 
-/**
- * PATCH valida cada campo presente sin introducir valores por defecto.
- * La modalidad de destino se determina junto al recurso actual y el objeto
- * completo se valida con resourceCreationSchema antes de persistirse.
- */
 export const resourcePatchSchema = z.object({
   modality: z.enum(RESOURCE_MODALITIES, { error: "La modalidad no es válida" }).optional(),
   title: titleSchema.optional(),

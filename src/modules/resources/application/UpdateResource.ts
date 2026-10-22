@@ -7,11 +7,6 @@ import { parseResourceCreation, parseResourcePatch } from "./ResourceSchemas";
 export class UpdateResource {
   constructor(private readonly repository: ResourceRepository) {}
 
-  /**
-   * Actualización parcial: los campos omitidos conservan su valor actual.
-   * El recurso se reconstruye con la fábrica de su modalidad (que puede ser
-   * otra), así las reglas de validación son las mismas que al crearlo.
-   */
   async execute(id: string, input: unknown): Promise<Resource> {
     const changes = parseResourcePatch(input);
     const current = await this.repository.findById(id);

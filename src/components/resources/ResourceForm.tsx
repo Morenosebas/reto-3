@@ -68,7 +68,6 @@ const inputClass =
   "w-full rounded-none border-0 border-b-2 border-ink/40 bg-field px-3 py-2.5 text-base text-ink outline-none transition-colors placeholder:text-ink-soft/70 hover:border-ink/70 focus:border-pen focus-visible:outline-none";
 
 interface ResourceFormProps {
-  /** Recurso en edición; si no se pasa, el formulario publica uno nuevo. */
   resource?: ResourceDTO;
   onSubmit: (payload: ResourcePayload) => Promise<void>;
   onCancel: () => void;

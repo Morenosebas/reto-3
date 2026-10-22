@@ -9,8 +9,6 @@ export class SaleResourceCreator extends ResourceCreator {
     draft: ResourceDraft,
   ): SaleResource {
     const rawPrice = draft.price;
-    // La API admite números y texto decimal del formulario, nunca coerciones
-    // de booleanos, arrays u objetos. Los precios se expresan en pesos enteros.
     if (
       (typeof rawPrice !== "number" && typeof rawPrice !== "string") ||
       (typeof rawPrice === "string" && !/^\d+$/.test(rawPrice.trim()))

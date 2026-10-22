@@ -7,10 +7,6 @@ import {
   type ResourceStatus,
 } from "../ResourceAttributes";
 
-/**
- * Datos para construir un recurso. Llegan sin validar desde la capa de
- * entrada (formulario o API), por eso cada campo es `unknown`.
- */
 export interface ResourceDraft {
   title?: unknown;
   description?: unknown;
@@ -26,14 +22,6 @@ export interface ResourceIdentity {
   createdAt: Date;
 }
 
-/**
- * Creador del patrón Factory Method.
- *
- * `create` contiene el algoritmo común (validar los datos compartidos y
- * asignar identidad) y delega en `createResource`, el Factory Method, la
- * decisión de qué subclase de Resource instanciar. Agregar una modalidad
- * nueva consiste en escribir otro creador, sin modificar este código.
- */
 export abstract class ResourceCreator {
   protected abstract createResource(
     base: BaseResourceProps,

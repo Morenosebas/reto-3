@@ -4,7 +4,6 @@ import { toResourceDTO } from "@/modules/resources/presentation/ResourceDTO";
 import { resourceUseCases } from "@/modules/resources/resourceModule";
 
 export default async function Home() {
-  // Los datos viven en memoria y cambian en cada petición: no prerenderizar.
   await connection();
   const resources = (await resourceUseCases.list.execute()).map(toResourceDTO);
 

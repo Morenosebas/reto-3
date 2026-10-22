@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 
-// Ejecutar únicamente contra la instancia local de demostración.
 const baseUrl = process.env.TEST_BASE_URL ?? 'http://127.0.0.1:3000';
 const url = new URL(baseUrl);
 if (!['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname)) {

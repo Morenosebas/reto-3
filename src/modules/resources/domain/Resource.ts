@@ -4,7 +4,6 @@ import type {
   ResourceStatus,
 } from "./ResourceAttributes";
 
-/** Datos comunes a cualquier recurso, sin importar su modalidad. */
 export interface BaseResourceProps {
   id: string;
   title: string;
@@ -16,10 +15,6 @@ export interface BaseResourceProps {
   updatedAt: Date;
 }
 
-/**
- * Producto del Factory Method: un objeto, material o producto publicado
- * para que otra persona lo reutilice. Cada modalidad es una subclase.
- */
 export abstract class Resource {
   abstract readonly modality: ResourceModality;
 
@@ -43,11 +38,9 @@ export abstract class Resource {
     this.updatedAt = props.updatedAt;
   }
 
-  /** Datos propios de la modalidad, usados al actualizar o serializar. */
   abstract modalityDetails(): { wantedInReturn?: string; price?: number };
 }
 
-/** Se entrega gratis a quien lo necesite. */
 export class DonationResource extends Resource {
   readonly modality = "donation" as const;
 
@@ -60,7 +53,6 @@ export class DonationResource extends Resource {
   }
 }
 
-/** Se entrega a cambio de otro objeto. */
 export class ExchangeResource extends Resource {
   readonly modality = "exchange" as const;
 
@@ -76,7 +68,6 @@ export class ExchangeResource extends Resource {
   }
 }
 
-/** Se vende a un precio simbólico, con un tope máximo. */
 export class SaleResource extends Resource {
   readonly modality = "sale" as const;
 
