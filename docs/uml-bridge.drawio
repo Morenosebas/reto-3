@@ -1,0 +1,126 @@
+<mxfile host="app.diagrams.net" version="21.0.0">
+  <diagram name="Bridge" id="bridge">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- TÍTULO -->
+        <mxCell id="title" value="Patrón Bridge — Componentes UI desacoplados de la lógica de modalidad" style="text;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="140" y="20" width="800" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- COLUMNAS -->
+        <mxCell id="col-abs" value="ABSTRACCIÓN (UI)" style="text;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="260" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="col-impl" value="IMPLEMENTADOR (lógica de modalidad)" style="text;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="560" y="60" width="440" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- ModalityPresenter  (Implementador abstracto)       -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="ModalityPresenter" value="«interface»&#xa;ModalityPresenter" style="swimlane;startSize=55;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;align=center;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="560" y="100" width="380" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="MP-methods" value="+valueDisplay(dto) : string&#xa;+extraFields(values, update, inputClass) : ReactNode&#xa;+toExtraPayload(values) : object" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="ModalityPresenter">
+          <mxGeometry x="0" y="55" width="380" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- ResourceCard  (Abstracción concreta 1)             -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="ResourceCard" value="ResourceCard" style="swimlane;startSize=40;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="160" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="RC-attrs" value="-presenter : ModalityPresenter&#xa;+render() : ReactNode" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="ResourceCard">
+          <mxGeometry x="0" y="40" width="260" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- ResourceForm  (Abstracción concreta 2)             -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="ResourceForm" value="ResourceForm" style="swimlane;startSize=40;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="320" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="RF-attrs" value="-presenter : ModalityPresenter&#xa;+render() : ReactNode" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="ResourceForm">
+          <mxGeometry x="0" y="40" width="260" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- DonationPresenter  (Implementador concreto 1)      -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="DonationPresenter" value="DonationPresenter" style="swimlane;startSize=40;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480" y="360" width="300" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="DP-methods" value="+valueDisplay() : &quot;Gratis&quot;&#xa;+extraFields() : null&#xa;+toExtraPayload() : {}" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="DonationPresenter">
+          <mxGeometry x="0" y="40" width="300" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- ExchangePresenter  (Implementador concreto 2)      -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="ExchangePresenter" value="ExchangePresenter" style="swimlane;startSize=40;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480" y="510" width="300" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="EP-methods" value="+valueDisplay(dto) : &quot;Lo cambio por...&quot;&#xa;+extraFields(...) : exchange-fields&#xa;+toExtraPayload(v) : { wantedInReturn }" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="ExchangePresenter">
+          <mxGeometry x="0" y="40" width="300" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- SalePresenter  (Implementador concreto 3)          -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="SalePresenter" value="SalePresenter" style="swimlane;startSize=40;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480" y="660" width="300" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="SP-methods" value="+valueDisplay(dto) : formatPrice(price)&#xa;+extraFields(...) : sale-fields&#xa;+toExtraPayload(v) : { price }" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="SalePresenter">
+          <mxGeometry x="0" y="40" width="300" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- MODALITY_PRESENTERS (registro)                     -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="Registry" value="MODALITY_PRESENTERS" style="swimlane;startSize=40;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="860" y="490" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Reg-attrs" value="donation → DonationPresenter&#xa;exchange → ExchangePresenter&#xa;sale → SalePresenter" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="Registry">
+          <mxGeometry x="0" y="40" width="260" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- RELACIONES -->
+
+        <!-- Implementadores heredan de ModalityPresenter -->
+        <mxCell id="e-dp-mp" value="implementa" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=0;dashed=1;strokeColor=#82b366;strokeWidth=2;fontSize=10;fontStyle=2;" edge="1" source="DonationPresenter" target="ModalityPresenter" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ep-mp" value="implementa" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=0;dashed=1;strokeColor=#82b366;strokeWidth=2;fontSize=10;fontStyle=2;" edge="1" source="ExchangePresenter" target="ModalityPresenter" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sp-mp" value="implementa" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=0;dashed=1;strokeColor=#82b366;strokeWidth=2;fontSize=10;fontStyle=2;" edge="1" source="SalePresenter" target="ModalityPresenter" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ResourceCard y ResourceForm usan ModalityPresenter -->
+        <mxCell id="e-rc-mp" value="usa" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeColor=#6c8ebf;strokeWidth=1.5;fontSize=10;fontStyle=2;" edge="1" source="ResourceCard" target="ModalityPresenter" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rf-mp" value="usa" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeColor=#6c8ebf;strokeWidth=1.5;fontSize=10;fontStyle=2;" edge="1" source="ResourceForm" target="ModalityPresenter" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Registry contiene los implementadores -->
+        <mxCell id="e-reg-dp" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;strokeColor=#b85450;strokeWidth=1.5;" edge="1" source="Registry" target="DonationPresenter" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-reg-ep" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;strokeColor=#b85450;strokeWidth=1.5;" edge="1" source="Registry" target="ExchangePresenter" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-reg-sp" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;strokeColor=#b85450;strokeWidth=1.5;" edge="1" source="Registry" target="SalePresenter" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

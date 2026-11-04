@@ -17,6 +17,7 @@ import {
   MODALITY_LABELS,
   STATUS_LABELS,
 } from "@/modules/resources/presentation/labels";
+import { MODALITY_PRESENTERS } from "@/modules/resources/presentation/ModalityPresenter";
 import { MODALITY_BORDER, MODALITY_FILL } from "./modalityStyles";
 
 interface FormValues {
@@ -56,11 +57,18 @@ function toFormValues(resource: ResourceDTO): FormValues {
 
 function toPayload(values: FormValues, isEditing: boolean): ResourcePayload {
   const { wantedInReturn, price, status, ...common } = values;
+
+  /**
+   * Bridge — abstracción: delega en el presentador de la modalidad para
+   * construir los campos extra del payload. Sin condicionales por modalidad.
+   */
+  const presenter = MODALITY_PRESENTERS[values.modality];
+  const extraPayload = presenter.toExtraPayload({ wantedInReturn, price });
+
   return {
     ...common,
     ...(isEditing && { status }),
-    ...(values.modality === "exchange" && { wantedInReturn }),
-    ...(values.modality === "sale" && { price }),
+    ...extraPayload,
   };
 }
 
@@ -86,6 +94,10 @@ export function ResourceForm({ resource, onSubmit, onCancel }: ResourceFormProps
     setValues((current) => ({ ...current, [field]: value }));
   }
 
+  function updateExtra(field: "wantedInReturn" | "price", value: string) {
+    update(field, value);
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
@@ -99,6 +111,16 @@ export function ResourceForm({ resource, onSubmit, onCancel }: ResourceFormProps
       setSubmitting(false);
     }
   }
+
+  /**
+   * Bridge — abstracción: obtiene el descriptor tipado de campos extra
+   * del presentador correspondiente a la modalidad activa.
+   */
+  const extraDescriptor = MODALITY_PRESENTERS[values.modality].extraFields(
+    { wantedInReturn: values.wantedInReturn, price: values.price },
+    updateExtra,
+    inputClass,
+  );
 
   return (
     <form
@@ -198,12 +220,13 @@ export function ResourceForm({ resource, onSubmit, onCancel }: ResourceFormProps
         </Field>
       </div>
 
-      {values.modality === "exchange" && (
+      {/* Bridge: campos extra renderizados según el descriptor tipado del presentador */}
+      {extraDescriptor?.type === "exchange-fields" && (
         <Field label="¿Qué te gustaría recibir a cambio?">
           <input
-            className={inputClass}
-            value={values.wantedInReturn}
-            onChange={(e) => update("wantedInReturn", e.target.value)}
+            className={extraDescriptor.inputClass}
+            value={extraDescriptor.wantedInReturn}
+            onChange={(e) => extraDescriptor.onChangeWantedInReturn(e.target.value)}
             placeholder="Libros, herramientas, plantas…"
             required
             minLength={3}
@@ -212,17 +235,17 @@ export function ResourceForm({ resource, onSubmit, onCancel }: ResourceFormProps
         </Field>
       )}
 
-      {values.modality === "sale" && (
+      {extraDescriptor?.type === "sale-fields" && (
         <Field
           label="Precio en pesos"
           hint={`Hasta ${MAX_SALE_PRICE.toLocaleString("es-CO")}. La idea es un precio justo, no hacer negocio.`}
         >
           <input
-            className={inputClass}
+            className={extraDescriptor.inputClass}
             type="number"
             inputMode="numeric"
-            value={values.price}
-            onChange={(e) => update("price", e.target.value)}
+            value={extraDescriptor.price}
+            onChange={(e) => extraDescriptor.onChangePrice(e.target.value)}
             placeholder="20000"
             required
             min={1}

@@ -1,22 +1,11 @@
 import type { ResourceDTO } from "@/modules/resources/presentation/ResourceDTO";
 import {
   CATEGORY_LABELS,
-  formatPrice,
   MODALITY_LABELS,
   STATUS_LABELS,
 } from "@/modules/resources/presentation/labels";
+import { MODALITY_PRESENTERS } from "@/modules/resources/presentation/ModalityPresenter";
 import { MODALITY_FILL } from "./modalityStyles";
-
-function modalityValue(resource: ResourceDTO): string {
-  switch (resource.modality) {
-    case "donation":
-      return "Gratis";
-    case "exchange":
-      return `Lo cambio por ${resource.wantedInReturn}`;
-    case "sale":
-      return formatPrice(resource.price ?? 0);
-  }
-}
 
 interface ResourceCardProps {
   resource: ResourceDTO;
@@ -37,6 +26,12 @@ export function ResourceCard({
   onAnimationEnd,
 }: ResourceCardProps) {
   const isDelivered = resource.status === "delivered";
+
+  /**
+   * Bridge — abstracción: delega en el implementador concreto de la modalidad
+   * para obtener el texto de valor. No hay switch ni condicionales aquí.
+   */
+  const presenter = MODALITY_PRESENTERS[resource.modality];
 
   return (
     // El filtro va en el contenedor porque el recorte de la etiqueta cortaría la sombra.
@@ -77,7 +72,8 @@ export function ResourceCard({
         {/* Línea de corte, como en una etiqueta de precio */}
         <div className="mt-5 border-t-2 border-dashed border-tag-ink/35 pt-4">
           <p className="font-display text-2xl font-extrabold leading-tight [font-stretch:80%]">
-            {modalityValue(resource)}
+            {/* Bridge: el presentador decide qué texto mostrar según la modalidad */}
+            {presenter.valueDisplay(resource)}
           </p>
           <div className="mt-4 flex gap-5 text-sm font-bold">
             <button

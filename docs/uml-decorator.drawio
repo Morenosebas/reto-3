@@ -1,0 +1,104 @@
+<mxfile host="app.diagrams.net" version="21.0.0">
+  <diagram name="Decorator" id="decorator">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- TÍTULO -->
+        <mxCell id="title" value="Patrón Decorator — Comportamiento transversal sobre el repositorio" style="text;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="100" y="20" width="800" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- ResourceRepository  (interfaz)                     -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="ResourceRepository" value="«interface»&#xa;ResourceRepository" style="swimlane;startSize=55;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;align=center;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="330" y="70" width="320" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="RR-methods" value="+findAll() : Promise&lt;Resource[]&gt;&#xa;+findById(id) : Promise&lt;Resource&gt;&#xa;+save(resource) : Promise&lt;void&gt;&#xa;+delete(id) : Promise&lt;boolean&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="ResourceRepository">
+          <mxGeometry x="0" y="55" width="320" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- InMemoryResourceRepository  (componente base)      -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="InMemoryRepo" value="«Singleton»&#xa;InMemoryResourceRepository" style="swimlane;startSize=55;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;align=center;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="320" width="300" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="IMR-methods" value="-resources : Map&lt;string, Resource&gt;&#xa;$+getInstance() : InMemoryResourceRepository&#xa;+findAll / findById / save / delete" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="InMemoryRepo">
+          <mxGeometry x="0" y="55" width="300" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- CachingRepositoryDecorator  (Decorador 1)          -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="CachingDecorator" value="CachingRepositoryDecorator" style="swimlane;startSize=40;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="430" y="320" width="300" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="CD-attrs" value="-inner : ResourceRepository&#xa;-cache : Resource[] | null&#xa;+findAll() : usa caché&#xa;+save / delete : invalida caché" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="CachingDecorator">
+          <mxGeometry x="0" y="40" width="300" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- LoggingRepositoryDecorator  (Decorador 2)          -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="LoggingDecorator" value="LoggingRepositoryDecorator" style="swimlane;startSize=40;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="430" y="520" width="300" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="LD-attrs" value="-inner : ResourceRepository&#xa;+findAll() : log + delega&#xa;+save() : delega + log&#xa;+delete() : delega + log" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="LoggingDecorator">
+          <mxGeometry x="0" y="40" width="300" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- resourceModule  (composición)                      -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="ResourceModule" value="«composition root»&#xa;resourceModule" style="swimlane;startSize=55;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;align=center;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="330" y="710" width="320" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="RM-body" value="base → InMemoryResourceRepository&#xa;cached → CachingRepositoryDecorator(base)&#xa;repo → LoggingRepositoryDecorator(cached)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="ResourceModule">
+          <mxGeometry x="0" y="55" width="320" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- RELACIONES -->
+
+        <!-- InMemoryRepo implementa ResourceRepository -->
+        <mxCell id="e-imr-rr" value="implementa" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=0;dashed=1;strokeColor=#6c8ebf;strokeWidth=2;fontSize=10;fontStyle=2;" edge="1" source="InMemoryRepo" target="ResourceRepository" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CachingDecorator implementa ResourceRepository -->
+        <mxCell id="e-cd-rr" value="implementa" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=0;dashed=1;strokeColor=#82b366;strokeWidth=2;fontSize=10;fontStyle=2;" edge="1" source="CachingDecorator" target="ResourceRepository" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- LoggingDecorator implementa ResourceRepository -->
+        <mxCell id="e-ld-rr" value="implementa" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=0;dashed=1;strokeColor=#82b366;strokeWidth=2;fontSize=10;fontStyle=2;" edge="1" source="LoggingDecorator" target="ResourceRepository" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CachingDecorator envuelve ResourceRepository (inner) -->
+        <mxCell id="e-cd-inner" value="envuelve" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeColor=#82b366;strokeWidth=1.5;fontSize=10;fontStyle=2;" edge="1" source="CachingDecorator" target="ResourceRepository" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="580" y="260"/><mxPoint x="490" y="260"/></Array></mxGeometry>
+        </mxCell>
+
+        <!-- LoggingDecorator envuelve ResourceRepository (inner) -->
+        <mxCell id="e-ld-inner" value="envuelve" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeColor=#82b366;strokeWidth=1.5;fontSize=10;fontStyle=2;" edge="1" source="LoggingDecorator" target="ResourceRepository" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="730" y="500"/><mxPoint x="730" y="260"/><mxPoint x="490" y="260"/></Array></mxGeometry>
+        </mxCell>
+
+        <!-- resourceModule ensambla la cadena -->
+        <mxCell id="e-rm-ld" value="ensambla" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;strokeColor=#9673a6;strokeWidth=1.5;fontSize=10;fontStyle=2;" edge="1" source="ResourceModule" target="LoggingDecorator" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rm-cd" value="ensambla" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;strokeColor=#9673a6;strokeWidth=1.5;fontSize=10;fontStyle=2;" edge="1" source="ResourceModule" target="CachingDecorator" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rm-imr" value="ensambla" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;strokeColor=#9673a6;strokeWidth=1.5;fontSize=10;fontStyle=2;" edge="1" source="ResourceModule" target="InMemoryRepo" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

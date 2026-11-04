@@ -1,4 +1,4 @@
-import { ResourceNotFoundError, ValidationError } from "@/modules/resources/domain/errors";
+import { isHttpMappable, ValidationError } from "@/modules/resources/domain/errors";
 
 // Utilidades HTTP compartidas por los endpoints de recursos.
 // No es un route.ts, así que Next.js no lo expone como ruta.
@@ -11,12 +11,17 @@ export async function readJsonBody(request: Request): Promise<unknown> {
   }
 }
 
+/**
+ * Adapter: convierte cualquier error del dominio en una respuesta HTTP.
+ *
+ * No conoce clases de error concretas (ValidationError, ResourceNotFoundError…).
+ * Solo comprueba si el error implementa HttpMappable; si es así, usa el
+ * httpStatus que el propio error declara. Añadir un nuevo tipo de error al
+ * dominio no requiere modificar esta función.
+ */
 export function errorResponse(error: unknown): Response {
-  if (error instanceof ValidationError) {
-    return Response.json({ error: error.message }, { status: 400 });
-  }
-  if (error instanceof ResourceNotFoundError) {
-    return Response.json({ error: error.message }, { status: 404 });
+  if (isHttpMappable(error)) {
+    return Response.json({ error: error.message }, { status: error.httpStatus });
   }
   console.error(error);
   return Response.json({ error: "Error interno del servidor" }, { status: 500 });
