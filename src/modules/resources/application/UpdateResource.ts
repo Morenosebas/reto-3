@@ -18,6 +18,7 @@ export class UpdateResource {
       category: current.category,
       location: current.location,
       status: current.status,
+      contactPhone: current.contactPhone,
       ...current.modalityDetails(),
       ...withoutUndefined(changes),
       modality: changes.modality ?? current.modality,

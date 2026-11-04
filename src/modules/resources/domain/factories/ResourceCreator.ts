@@ -1,3 +1,4 @@
+import { CONTACT_PHONE_MESSAGE, toColombianMobile } from "../contactPhone";
 import { ValidationError } from "../errors";
 import type { BaseResourceProps, Resource } from "../Resource";
 import {
@@ -15,11 +16,14 @@ export interface ResourceDraft {
   status?: unknown;
   wantedInReturn?: unknown;
   price?: unknown;
+  contactPhone?: unknown;
 }
 
 export interface ResourceIdentity {
   id: string;
   createdAt: Date;
+  /** Solo al restaurar un recurso guardado; si se omite, se usa la fecha actual. */
+  updatedAt?: Date;
 }
 
 export abstract class ResourceCreator {
@@ -40,12 +44,22 @@ export abstract class ResourceCreator {
         draft.status === undefined
           ? "available"
           : requireOption<ResourceStatus>(draft.status, RESOURCE_STATUSES, "estado"),
+      contactPhone: optionalContactPhone(draft.contactPhone),
       createdAt: identity?.createdAt ?? now,
-      updatedAt: now,
+      updatedAt: identity?.updatedAt ?? now,
     };
 
     return this.createResource(base, draft);
   }
+}
+
+// El contacto es opcional en el dominio: las publicaciones anteriores no lo
+// tienen. Si llega, debe ser un celular colombiano.
+function optionalContactPhone(value: unknown): string | undefined {
+  if (value === undefined) return undefined;
+  const phone = typeof value === "string" ? toColombianMobile(value) : null;
+  if (!phone) throw new ValidationError(CONTACT_PHONE_MESSAGE);
+  return phone;
 }
 
 export function requireText(

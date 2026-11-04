@@ -12,6 +12,8 @@ import { DeleteResource } from "../src/modules/resources/application/DeleteResou
 import { parseResourcePatch } from "../src/modules/resources/application/ResourceSchemas";
 import { toResourceDTO } from "../src/modules/resources/presentation/ResourceDTO";
 import "./resource-schemas.test";
+import "./structural-patterns.test";
+import "./catalog-front.test";
 
 const base = { title: "Mesa reutilizable", description: "Mesa de madera en buen estado", category: "furniture", location: "Bogotá" };
 const repository = InMemoryResourceRepository.getInstance();

@@ -1,6 +1,5 @@
 import type { NextRequest } from "next/server";
-import { toResourceDTO } from "@/modules/resources/presentation/ResourceDTO";
-import { resourceUseCases } from "@/modules/resources/resourceModule";
+import { getCatalog } from "@/modules/resources/catalog/catalogAccess";
 import { errorResponse, readJsonBody } from "../http";
 
 type Context = RouteContext<"/api/resources/[id]">;
@@ -8,8 +7,8 @@ type Context = RouteContext<"/api/resources/[id]">;
 export async function GET(_request: NextRequest, ctx: Context) {
   try {
     const { id } = await ctx.params;
-    const resource = await resourceUseCases.get.execute(id);
-    return Response.json(toResourceDTO(resource));
+    const catalog = await getCatalog();
+    return Response.json(await catalog.find(id));
   } catch (error) {
     return errorResponse(error);
   }
@@ -19,8 +18,8 @@ export async function PATCH(request: NextRequest, ctx: Context) {
   try {
     const { id } = await ctx.params;
     const changes = await readJsonBody(request);
-    const resource = await resourceUseCases.update.execute(id, changes);
-    return Response.json(toResourceDTO(resource));
+    const catalog = await getCatalog();
+    return Response.json(await catalog.edit(id, changes));
   } catch (error) {
     return errorResponse(error);
   }
@@ -29,7 +28,8 @@ export async function PATCH(request: NextRequest, ctx: Context) {
 export async function DELETE(_request: NextRequest, ctx: Context) {
   try {
     const { id } = await ctx.params;
-    await resourceUseCases.delete.execute(id);
+    const catalog = await getCatalog();
+    await catalog.withdraw(id);
     return new Response(null, { status: 204 });
   } catch (error) {
     return errorResponse(error);

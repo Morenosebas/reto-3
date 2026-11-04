@@ -1,0 +1,61 @@
+digraph Proxy {
+ graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.6", ranksep="0.75", label="Reutiliza · Proxy de protección\nSolo quien publica puede editar o retirar", labelloc=t, fontsize=22, fontname="DejaVu Sans"];
+ node [shape=plain, fontname="DejaVu Sans", fontsize=11];
+ edge [fontname="DejaVu Sans", fontsize=10, color="#44516d"];
+
+ Clients [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#fff5cf" COLOR="#2440d8">
+  <TR><TD>«cliente»<BR/><B>Páginas, Server Actions y Route Handlers</B></TD></TR>
+ </TABLE>>];
+
+ Access [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#fff5cf" COLOR="#2440d8">
+  <TR><TD>«Data Access Layer · server-only»<BR/><B>catalogAccess.ts</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">− PUBLISHER_COOKIE = "reutiliza_publisher" (httpOnly)<BR ALIGN="LEFT"/></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">+ getCatalog(): Promise&lt;ResourceCatalog&gt;  «cache»<BR ALIGN="LEFT"/>+ findCatalogEntry(id): Promise&lt;CatalogEntry | null&gt;  «cache»<BR ALIGN="LEFT"/>+ getPublishingCatalog(): Promise&lt;ResourceCatalog&gt;<BR ALIGN="LEFT"/>− fingerprint(publisherKey: string): string<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Subject [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eef4ff" COLOR="#2440d8">
+  <TR><TD>«interface»<BR/><B>ResourceCatalog</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">+ browse(criteria?): Promise&lt;CatalogEntry[]&gt;<BR ALIGN="LEFT"/>+ find(id): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>+ publish(input): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>+ edit(id, changes): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>+ withdraw(id): Promise&lt;void&gt;<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Proxy [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#dfe8ff" COLOR="#2440d8">
+  <TR><TD>«proxy»<BR/><B>OwnerProtectedCatalog</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">− catalog: ResourceCatalog<BR ALIGN="LEFT"/>− publishers: PublisherRegistry<BR ALIGN="LEFT"/>− visitorId: string | null<BR ALIGN="LEFT"/></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">+ browse(criteria?): Promise&lt;CatalogEntry[]&gt;<BR ALIGN="LEFT"/>+ find(id): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>+ publish(input): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>+ edit(id, changes): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>+ withdraw(id): Promise&lt;void&gt;<BR ALIGN="LEFT"/>− withPermissions(entry): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>− isPublisherOf(id): Promise&lt;boolean&gt;<BR ALIGN="LEFT"/>− assertIsPublisher(id): Promise&lt;void&gt;<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Real [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eef4ff" COLOR="#2440d8">
+  <TR><TD>«facade»<BR/><B>CommunityCatalog</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">− useCases: ResourceUseCases<BR ALIGN="LEFT"/></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">+ browse() · find() · publish()<BR ALIGN="LEFT"/>+ edit() · withdraw()<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Registry [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eef4ff" COLOR="#2440d8">
+  <TR><TD>«interface»<BR/><B>PublisherRegistry</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">+ register(resourceId, publisherId): Promise&lt;void&gt;<BR ALIGN="LEFT"/>+ publisherOf(resourceId): Promise&lt;string | null&gt;<BR ALIGN="LEFT"/>+ forget(resourceId): Promise&lt;void&gt;<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ StoredRegistry [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eef4ff" COLOR="#2440d8">
+  <TR><TD><B>UnstoragePublisherRegistry</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">− storage: Storage<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Error [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#f8fafc" COLOR="#2440d8">
+  <TR><TD>«error» → HTTP 403<BR/><B>NotResourcePublisherError</B></TD></TR>
+ </TABLE>>];
+
+ Note [shape=note, style=filled, fillcolor="#f8fafc", color="#8a94ad", fontname="DejaVu Sans", fontsize=10, label="Subject: ResourceCatalog · RealSubject: CommunityCatalog\lProxy: OwnerProtectedCatalog, misma interfaz que el real.\ledit y withdraw delegan solo si visitorId coincide con\lel publicante registrado; si no, lanzan el error 403.\lvisitorId = huella SHA-256 de la cookie, nunca la clave.\l"];
+
+ Clients -> Access [style=dashed, arrowhead=vee, label=" obtiene el catálogo"];
+ Clients -> Subject [style=dashed, arrowhead=vee, label=" usa"];
+ Access -> Proxy [style=dashed, arrowhead=vee, label=" «create» por petición"];
+ Proxy -> Subject [style=dashed, arrowhead=empty, label=" implementa"];
+ Real -> Subject [style=dashed, arrowhead=empty, label=" implementa"];
+ Proxy -> Real [arrowhead=vee, label=" catalog  1\n (delega)"];
+ Proxy -> Registry [arrowhead=vee, label=" publishers  1"];
+ StoredRegistry -> Registry [style=dashed, arrowhead=empty, label=" implementa"];
+ Proxy -> Error [style=dashed, arrowhead=vee, label=" «throw»"];
+ Note -> Proxy [style=dotted, arrowhead=none];
+ {rank=same; Proxy; Real}
+ {rank=same; Registry; Error}
+}

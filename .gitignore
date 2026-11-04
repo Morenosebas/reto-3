@@ -43,3 +43,6 @@ next-env.d.ts
 .atl/skill-registry.md
 .gitignore
 .gitignore
+
+# datos locales del almacén de recursos (unstorage)
+/.data/
