@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CONTACT_PHONE_MESSAGE, toColombianMobile } from "../domain/contactPhone";
 import { ValidationError } from "../domain/errors";
 import {
   MAX_SALE_PRICE,
@@ -55,6 +56,11 @@ const salePriceSchema = z
       }),
   );
 
+const contactPhoneSchema = z
+  .string({ error: CONTACT_PHONE_MESSAGE })
+  .refine((value) => toColombianMobile(value) !== null, { error: CONTACT_PHONE_MESSAGE })
+  .transform((value) => toColombianMobile(value) as string);
+
 const commonCreationFields = {
   title: titleSchema,
   description: descriptionSchema,
@@ -65,6 +71,7 @@ const commonCreationFields = {
   status: z
     .enum(RESOURCE_STATUSES, { error: "El estado no es válido" })
     .optional(),
+  contactPhone: contactPhoneSchema.optional(),
 };
 
 export const resourceCreationSchema = z.discriminatedUnion("modality", [
@@ -99,6 +106,7 @@ export const resourcePatchSchema = z.object({
   status: z.enum(RESOURCE_STATUSES, { error: "El estado no es válido" }).optional(),
   wantedInReturn: wantedInReturnSchema.optional(),
   price: salePriceSchema.optional(),
+  contactPhone: contactPhoneSchema.optional(),
 });
 
 export type ResourceCreationInput = z.input<typeof resourceCreationSchema>;
@@ -123,10 +131,22 @@ function validationError(error: z.ZodError, action: "crear" | "actualizar") {
   if (!issue || issue.path.length === 0) {
     return new ValidationError("El cuerpo debe ser un objeto JSON");
   }
+  const fieldErrors = fieldErrorsOf(error);
   if (issue.path[0] === "modality") {
-    return new ValidationError("La modalidad no es válida");
+    return new ValidationError("La modalidad no es válida", fieldErrors);
   }
   return new ValidationError(
     issue.message || `Los datos no son válidos para ${action} el recurso`,
+    fieldErrors,
   );
+}
+
+function fieldErrorsOf(error: z.ZodError): Record<string, string> {
+  const fieldErrors: Record<string, string> = {};
+  for (const issue of error.issues) {
+    const field = issue.path[0];
+    if (typeof field !== "string" || field in fieldErrors) continue;
+    fieldErrors[field] = field === "modality" ? "La modalidad no es válida" : issue.message;
+  }
+  return fieldErrors;
 }

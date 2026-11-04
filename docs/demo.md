@@ -17,7 +17,7 @@ npm run start
 
 La aplicación se abre en `http://localhost:3000`. Con el servidor activo, `npm run test:http` permite ejecutar las pruebas de integración. Los diagramas están disponibles en [Factory Method](uml/factory-method.svg) y [Singleton](uml/singleton.svg).
 
-Durante el recorrido CRUD se utiliza una única instancia del servidor. Su reinicio elimina los datos de la sesión y restaura las publicaciones de ejemplo.
+Durante el recorrido CRUD se utiliza una única instancia del servidor. Por defecto los datos se guardan en `.data/` y se conservan al reiniciar. Para mostrar el comportamiento del Singleton en memoria de la primera entrega, inicia el servidor con `RESOURCE_STORAGE=memory`.
 
 ## Secuencia de exposición
 
@@ -43,7 +43,9 @@ Durante el recorrido CRUD se utiliza una única instancia del servidor. Su reini
 
 Las categorías de estos ejemplos corresponden a `furniture`, `books` y `materials` en la API. El formulario muestra sus etiquetas en español.
 
-La consulta de un recurso desde peticiones sucesivas ilustra el acceso al mismo almacén del servidor. El reinicio del proceso permite explicar la pérdida de datos propia de la persistencia en memoria. Estas observaciones se circunscriben a una instancia de ejecución.
+La consulta de un recurso desde peticiones sucesivas ilustra el acceso al mismo almacén del servidor. Con `RESOURCE_STORAGE=memory`, el reinicio del proceso permite explicar la pérdida de datos propia de la persistencia en memoria; con el almacén en archivos, el mismo reinicio demuestra la persistencia que aporta el Adapter. Estas observaciones se circunscriben a una instancia de ejecución.
+
+Para el Proxy, publica un recurso y edítalo desde el mismo navegador; luego ábrelo en una ventana privada: allí no aparecen las acciones de editar ni eliminar, y la API responde 403 si se intenta. El guion de los patrones estructurales está en el [informe](patrones-estructurales.md).
 
 ## Distribución de contenidos
 

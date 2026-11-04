@@ -1,4 +1,8 @@
-import { ResourceNotFoundError, ValidationError } from "@/modules/resources/domain/errors";
+import {
+  NotResourcePublisherError,
+  ResourceNotFoundError,
+  ValidationError,
+} from "@/modules/resources/domain/errors";
 
 
 export async function readJsonBody(request: Request): Promise<unknown> {
@@ -15,6 +19,9 @@ export function errorResponse(error: unknown): Response {
   }
   if (error instanceof ResourceNotFoundError) {
     return Response.json({ error: error.message }, { status: 404 });
+  }
+  if (error instanceof NotResourcePublisherError) {
+    return Response.json({ error: error.message }, { status: 403 });
   }
   console.error(error);
   return Response.json({ error: "Error interno del servidor" }, { status: 500 });

@@ -26,6 +26,25 @@ export const STATUS_LABELS: Record<ResourceStatus, string> = {
   delivered: "Entregado",
 };
 
+const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ["year", 365 * 24 * 60 * 60 * 1000],
+  ["month", 30 * 24 * 60 * 60 * 1000],
+  ["week", 7 * 24 * 60 * 60 * 1000],
+  ["day", 24 * 60 * 60 * 1000],
+  ["hour", 60 * 60 * 1000],
+  ["minute", 60 * 1000],
+];
+
+/** "hace 3 días", "ayer", "hace un momento". */
+export function formatRelativeDate(isoDate: string, now: number = Date.now()): string {
+  const elapsed = new Date(isoDate).getTime() - now;
+  const formatter = new Intl.RelativeTimeFormat("es", { numeric: "auto" });
+  for (const [unit, size] of RELATIVE_UNITS) {
+    if (Math.abs(elapsed) >= size) return formatter.format(Math.round(elapsed / size), unit);
+  }
+  return "hace un momento";
+}
+
 export function formatPrice(price: number): string {
   return price.toLocaleString("es-CO", {
     style: "currency",
