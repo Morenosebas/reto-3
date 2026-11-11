@@ -31,7 +31,7 @@ digraph PatronesEstructurales {
  Access -> Proxy [style=dashed, arrowhead=vee, label=" «create»"];
  Proxy -> Catalog [style=dashed, arrowhead=empty];
  Facade -> Catalog [style=dashed, arrowhead=empty];
- Proxy -> Facade [arrowhead=vee, label=" delega si es\n quien publicó"];
+ Proxy -> Catalog [arrowhead=vee, label=" catalog  1\n (delega)"];
  Proxy -> Registry [arrowhead=vee];
  Facade -> UseCases [arrowhead=vee, label=" coordina"];
  UseCases -> Target [arrowhead=vee, label=" repository"];

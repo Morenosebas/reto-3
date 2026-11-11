@@ -2,6 +2,8 @@
 
 **PADISOFT · Patrones estructurales**
 
+**Integrantes:** Daniel Parra · Johan Sebastián González · Sebastián Vargas
+
 ## 1. Contexto y objetivo
 
 Reutiliza permite publicar objetos, materiales y productos para donarlos, intercambiarlos o venderlos a un precio solidario. La primera entrega construyó el CRUD de recursos sobre una arquitectura de monolito modular con Next.js y aplicó dos patrones creacionales: **Factory Method**, para construir cada modalidad con sus reglas, y **Singleton**, para compartir el almacén en memoria.
@@ -36,7 +38,7 @@ Esta entrega identifica tres problemas del proyecto resultante y los resuelve co
 
 **Patrón aplicado.** Proxy proporciona un sustituto de otro objeto para controlar el acceso a él. `OwnerProtectedCatalog` implementa la misma interfaz `ResourceCatalog` que la Fachada y la envuelve:
 
-- `publish` registra al visitante como publicante del recurso creado.
+- `publish` registra al visitante como publicante del recurso creado. Si falla el registro, intenta retirar el recurso como compensación para no dejar una publicación sin propietario. Esta compensación no sustituye una transacción atómica.
 - `edit` y `withdraw` comprueban que el visitante sea quien publicó el recurso antes de delegar. Si no lo es, lanzan `NotResourcePublisherError`, que la API traduce a HTTP 403.
 - `browse` y `find` delegan sin restricción y agregan `canManage` a cada entrada, para que la interfaz muestre las acciones de editar y retirar solo a quien corresponde.
 
@@ -102,7 +104,7 @@ Los diagramas están en [docs/uml](uml/README.md), en formato Graphviz DOT edita
 | Creador del Proxy | `getCatalog`, `getPublishingCatalog` | `modules/resources/catalog/catalogAccess.ts` |
 | Clientes | Páginas, Server Actions y Route Handlers | `app/` |
 
-El Proxy y el RealSubject realizan la misma interfaz (línea discontinua con triángulo). El Proxy mantiene una asociación con el catálogo real, al que delega, y otra con el registro de publicantes. `catalogAccess.ts` crea un Proxy por petición con la huella del visitante.
+El Proxy y el RealSubject realizan la misma interfaz (línea discontinua con triángulo). El Proxy mantiene una asociación de tipo `ResourceCatalog`, al que delega, y otra con el registro de publicantes. La composición inyecta `CommunityCatalog` como catálogo real. `catalogAccess.ts` crea un Proxy por petición con la huella del visitante.
 
 ### 3.3 Adapter
 
@@ -115,6 +117,8 @@ El Proxy y el RealSubject realizan la misma interfaz (línea discontinua con tri
 | Adaptee | `Storage` de la librería unstorage | `node_modules/unstorage` |
 | Clientes | Los cinco casos de uso | `modules/resources/application/` |
 | Estructura traducida | `StoredResourceRecord` | `infrastructure/UnstorageResourceRepository.ts` |
+
+`toRecord` y `toResource` son funciones internas del módulo `UnstorageResourceRepository.ts`, no métodos privados de la clase.
 
 Se trata de un Adapter de objetos: `UnstorageResourceRepository` compone una instancia de `Storage` en lugar de heredar de ella. `InMemoryResourceRepository`, el Singleton de la primera entrega, realiza el mismo Target y demuestra que las implementaciones son intercambiables.
 
@@ -199,6 +203,8 @@ Las mejoras de la interfaz consumen el catálogo sin modificar los patrones:
 
 ### 4.5 Verificación
 
+La verificación actual y su alcance se detallan en el [registro de pruebas](verificacion.md). La siguiente tabla conserva los resultados registrados durante el desarrollo de esta rama; no debe confundirse con una ejecución completa de todas las comprobaciones el 11 de noviembre.
+
 | Comprobación | Resultado |
 | --- | --- |
 | `npm run lint` y `npm run typecheck` | Sin errores |
@@ -220,3 +226,10 @@ Las pruebas nuevas cubren:
 - La clave del publicante identifica a un navegador, no a una persona. Si se borran las cookies o se cambia de navegador, se pierde la posibilidad de gestionar las publicaciones propias. Una autenticación completa reemplazaría a `catalogAccess.ts` como fuente de identidad, sin cambiar el Proxy.
 - Los recursos cargados con `npm run seed` quedan asociados a una clave que el script no conserva; ningún visitante puede editarlos, lo que es coherente con la regla de propiedad.
 - El driver `fs-lite` sirve para un único servidor. Un despliegue con varias instancias requiere un driver compartido, como Redis.
+
+- La creación del recurso y el registro de su propietario son operaciones separadas. El Proxy intenta compensar un fallo de registro retirando el recurso; si también falla la retirada, se requiere conciliación del almacén. No se garantiza atomicidad ante fallos múltiples.
+- Dos primeras publicaciones simultáneas, antes de que el navegador conserve la cookie, pueden generar identidades diferentes. La identidad anónima no ofrece la coordinación de sesión de un sistema de autenticación.
+
+### Verificación final de entrega
+
+El 11 de noviembre se ejecutaron 81 pruebas unitarias y de seed y 91 comprobaciones HTTP, sin fallos. Lint, tipos y compilación de producción Webpack aprobaron. La validación de navegador quedó bloqueada por las restricciones del entorno. El detalle y la separación respecto de las evidencias históricas están en [el registro de verificación](verificacion.md).

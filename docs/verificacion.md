@@ -1,5 +1,44 @@
 # Registro de pruebas de Reutiliza
 
+## Revisión de patrones estructurales · 11 de noviembre de 2026
+
+Base revisada: `fc5857a`, rama `feature/patrones-estructurales`. Resultados siguientes ejecutados sobre los ajustes finales del 11 de noviembre (compensación del Proxy y sincronización de filtros).
+
+| Comprobación ejecutada | Resultado |
+| --- | --- |
+| `npm run lint` | Aprobado |
+| `npm run typecheck` | Aprobado |
+| Suite TypeScript de dominio/aplicación/patrones/filtros | 78 pruebas aprobadas; 0 fallos |
+| Suite de seed | 3 pruebas aprobadas; 0 fallos |
+| `npm run build -- --webpack` | Compilación de producción aprobada |
+| `npm run test:http` contra servidor de producción local | 91 comprobaciones aprobadas; datos de prueba eliminados |
+| Prueba de navegador de búsqueda, limpieza y atrás/adelante | No ejecutada: Chromium no pudo iniciar por restricción de sockets del entorno (`Operation not permitted`) |
+
+Total unitario: **81 pruebas aprobadas**, incluidas dos regresiones del Proxy para fallo al registrar propietario y fallo doble durante la compensación. Se corrigió el formulario de filtros con una clave derivada de la URL para restablecer los valores al navegar; su comprobación visual queda pendiente. No se afirma una validación completa de UI. Las 55 comprobaciones de navegador mencionadas en el informe pertenecen al registro previo del equipo, no a esta ejecución. La instalación de dependencias terminó correctamente tras un intento parcial; no se modificaron las versiones.
+
+### Reproducción de la validación completa
+
+```bash
+npm ci
+npm run lint
+npm run typecheck
+npm test
+npm run build -- --webpack
+npm run start
+```
+
+Con el servidor local activo, ejecutar `npm run test:http` en otra terminal. Para otro puerto, usar `TEST_BASE_URL=http://127.0.0.1:3187 npm run test:http`. La suite crea y elimina datos de prueba; debe ejecutarse solo contra el servidor local de demostración.
+
+### Alcance actual
+
+El Adapter usa almacenamiento en archivos por defecto y el Proxy controla la propiedad mediante una clave anónima del navegador. El modo `RESOURCE_STORAGE=memory` sigue siendo temporal. El almacén en archivos es apropiado para una instancia; no se ha validado como almacenamiento distribuido ni como sistema de autenticación de producción. La creación y el registro de propietario no son una transacción: la compensación intenta retirar el recurso si falla el registro, pero un doble fallo exige conciliación. La carrera entre primeras publicaciones sin cookie previa permanece como límite de la identidad anónima.
+
+---
+
+El anexo siguiente conserva los resultados de la entrega creacional del 21 de octubre. Sus cifras y limitaciones describen aquella versión, no sustituyen los resultados estructurales anteriores.
+
+# Anexo: verificación histórica de la entrega creacional
+
 **Fecha de ejecución: 21 de octubre de 2026.**  
 ## Objetivo y entorno
 

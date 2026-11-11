@@ -31,13 +31,13 @@ El repositorio implementa el contrato de almacenamiento y expone una operación 
 
 ## Proxy
 
-`OwnerProtectedCatalog` implementa la misma interfaz `ResourceCatalog` que la fachada y solo delega la edición y el retiro cuando el visitante es quien publicó el recurso. La Data Access Layer crea un proxy por petición con la huella de la cookie del visitante.
+`OwnerProtectedCatalog` implementa la misma interfaz `ResourceCatalog` que la fachada y solo delega la edición y el retiro cuando el visitante es quien publicó el recurso. La Data Access Layer crea un proxy por petición con la huella de la cookie del visitante. La asociación `catalog` apunta a `ResourceCatalog`, su tipo declarado; la raíz de composición proporciona `CommunityCatalog`.
 
 ![Diagrama de clases de Proxy](proxy.svg)
 
 ## Adapter
 
-`UnstorageResourceRepository` hace que el almacén clave-valor de unstorage cumpla el contrato `ResourceRepository`. Traduce entidades a JSON plano y las reconstruye con el Factory Method.
+`UnstorageResourceRepository` hace que el almacén clave-valor de unstorage cumpla el contrato `ResourceRepository`. Traduce entidades a JSON plano y las reconstruye con el Factory Method. `toRecord` y `toResource` son funciones internas del módulo, no métodos de la clase.
 
 ![Diagrama de clases de Adapter](adapter.svg)
 

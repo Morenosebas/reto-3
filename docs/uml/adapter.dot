@@ -16,7 +16,7 @@ digraph Adapter {
  Adapter [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#dfe8ff" COLOR="#2440d8">
   <TR><TD>«adapter»<BR/><B>UnstorageResourceRepository</B></TD></TR><HR/>
   <TR><TD ALIGN="LEFT">− storage: Storage<BR ALIGN="LEFT"/></TD></TR><HR/>
-  <TR><TD ALIGN="LEFT">+ constructor(storage: Storage)<BR ALIGN="LEFT"/>+ findAll(): Promise&lt;Resource[]&gt;<BR ALIGN="LEFT"/>+ findById(id): Promise&lt;Resource | null&gt;<BR ALIGN="LEFT"/>+ save(resource): Promise&lt;void&gt;<BR ALIGN="LEFT"/>+ delete(id): Promise&lt;boolean&gt;<BR ALIGN="LEFT"/>− toRecord(resource): StoredResourceRecord<BR ALIGN="LEFT"/>− toResource(record): Resource<BR ALIGN="LEFT"/></TD></TR>
+  <TR><TD ALIGN="LEFT">+ constructor(storage: Storage)<BR ALIGN="LEFT"/>+ findAll(): Promise&lt;Resource[]&gt;<BR ALIGN="LEFT"/>+ findById(id): Promise&lt;Resource | null&gt;<BR ALIGN="LEFT"/>+ save(resource): Promise&lt;void&gt;<BR ALIGN="LEFT"/>+ delete(id): Promise&lt;boolean&gt;<BR ALIGN="LEFT"/></TD></TR>
  </TABLE>>];
 
  Memory [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eef4ff" COLOR="#2440d8">
@@ -49,7 +49,7 @@ digraph Adapter {
   <TR><TD ALIGN="LEFT">+ getResourceStorage(): Storage<BR ALIGN="LEFT"/></TD></TR>
  </TABLE>>];
 
- Note [shape=note, style=filled, fillcolor="#f8fafc", color="#8a94ad", fontname="DejaVu Sans", fontsize=10, label="Target: ResourceRepository · Adaptee: Storage (unstorage)\lAdapter: UnstorageResourceRepository.\lsave: Resource → StoredResourceRecord → setItem(\"resources:id\")\lfind: getItem → StoredResourceRecord → ResourceCreator → Resource\l"];
+ Note [shape=note, style=filled, fillcolor="#f8fafc", color="#8a94ad", fontname="DejaVu Sans", fontsize=10, label="Target: ResourceRepository · Adaptee: Storage (unstorage)\lAdapter: UnstorageResourceRepository.\ltoRecord y toResource son funciones internas del módulo,\lno métodos de la clase.\lsave: Resource → StoredResourceRecord → setItem(\"resources:id\")\lfind: getItem → StoredResourceRecord → ResourceCreator → Resource\l"];
 
  UseCases -> Target [arrowhead=vee, label=" repository  1"];
  Adapter -> Target [style=dashed, arrowhead=empty, label=" implementa"];

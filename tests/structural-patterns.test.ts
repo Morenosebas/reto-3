@@ -153,3 +153,39 @@ test("Proxy: un recurso inexistente sigue respondiendo como no encontrado", asyn
   await assert.rejects(as("huella-ana").edit("no-existe", { title: "Nada" }), ResourceNotFoundError);
   await assert.rejects(as("huella-ana").withdraw("no-existe"), ResourceNotFoundError);
 });
+
+test("Proxy: revierte la publicación si falla el registro de propietario", async () => {
+  const { catalog, publishers } = setUp();
+  const failure = new Error("registro no disponible");
+  const brokenRegistry = {
+    publisherOf: publishers.publisherOf.bind(publishers),
+    forget: publishers.forget.bind(publishers),
+    register: async (id: string, owner: string) => {
+      await publishers.register(id, owner);
+      throw failure;
+    },
+  };
+  const proxy = new OwnerProtectedCatalog(catalog, brokenRegistry, "ana");
+  await assert.rejects(proxy.publish({ ...base, modality: "donation" }), (error) => error === failure);
+  assert.deepEqual(await catalog.browse(), []);
+});
+
+test("Proxy: conserva ambos errores si también falla la compensación", async () => {
+  const { catalog, publishers } = setUp();
+  const registrationError = new Error("registro fallido");
+  const cleanupError = new Error("borrado fallido");
+  const proxy = new OwnerProtectedCatalog({
+    browse: catalog.browse.bind(catalog), find: catalog.find.bind(catalog),
+    publish: catalog.publish.bind(catalog), edit: catalog.edit.bind(catalog),
+    withdraw: async () => { throw cleanupError; },
+  }, {
+    publisherOf: publishers.publisherOf.bind(publishers),
+    forget: publishers.forget.bind(publishers),
+    register: async () => { throw registrationError; },
+  }, "ana");
+  await assert.rejects(proxy.publish({ ...base, modality: "donation" }), (error) => {
+    assert.ok(error instanceof AggregateError);
+    assert.deepEqual(error.errors, [registrationError, cleanupError]);
+    return true;
+  });
+});

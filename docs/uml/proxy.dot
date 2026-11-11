@@ -44,14 +44,14 @@ digraph Proxy {
   <TR><TD>«error» → HTTP 403<BR/><B>NotResourcePublisherError</B></TD></TR>
  </TABLE>>];
 
- Note [shape=note, style=filled, fillcolor="#f8fafc", color="#8a94ad", fontname="DejaVu Sans", fontsize=10, label="Subject: ResourceCatalog · RealSubject: CommunityCatalog\lProxy: OwnerProtectedCatalog, misma interfaz que el real.\ledit y withdraw delegan solo si visitorId coincide con\lel publicante registrado; si no, lanzan el error 403.\lvisitorId = huella SHA-256 de la cookie, nunca la clave.\l"];
+ Note [shape=note, style=filled, fillcolor="#f8fafc", color="#8a94ad", fontname="DejaVu Sans", fontsize=10, label="Subject: ResourceCatalog · RealSubject: CommunityCatalog\lProxy: OwnerProtectedCatalog, misma interfaz que el real.\lcatalog se tipa como ResourceCatalog; en la composición\lse inyecta CommunityCatalog.\ledit y withdraw delegan solo si visitorId coincide con\lel publicante registrado; si no, lanzan el error 403.\lvisitorId = huella SHA-256 de la cookie, nunca la clave.\l"];
 
  Clients -> Access [style=dashed, arrowhead=vee, label=" obtiene el catálogo"];
  Clients -> Subject [style=dashed, arrowhead=vee, label=" usa"];
  Access -> Proxy [style=dashed, arrowhead=vee, label=" «create» por petición"];
  Proxy -> Subject [style=dashed, arrowhead=empty, label=" implementa"];
  Real -> Subject [style=dashed, arrowhead=empty, label=" implementa"];
- Proxy -> Real [arrowhead=vee, label=" catalog  1\n (delega)"];
+ Proxy -> Subject [arrowhead=vee, label=" catalog  1\n (delega)"];
  Proxy -> Registry [arrowhead=vee, label=" publishers  1"];
  StoredRegistry -> Registry [style=dashed, arrowhead=empty, label=" implementa"];
  Proxy -> Error [style=dashed, arrowhead=vee, label=" «throw»"];

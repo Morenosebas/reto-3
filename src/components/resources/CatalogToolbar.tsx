@@ -36,7 +36,7 @@ export function CatalogToolbar({
         Lo que hay para llevar
       </h2>
 
-      <Form action="/" role="search" className="flex flex-wrap gap-2">
+      <Form key={catalogHref(filters)} action="/" role="search" className="flex flex-wrap gap-2">
         <label htmlFor="catalog-search" className="sr-only">
           Buscar recursos
         </label>

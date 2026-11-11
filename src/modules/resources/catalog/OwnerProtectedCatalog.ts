@@ -33,7 +33,22 @@ export class OwnerProtectedCatalog implements ResourceCatalog {
       throw new NotResourcePublisherError("Se necesita una clave de publicante para publicar");
     }
     const entry = await this.catalog.publish(input);
-    await this.publishers.register(entry.id, this.visitorId);
+    try {
+      await this.publishers.register(entry.id, this.visitorId);
+    } catch (registrationError) {
+      // Compensación: no confirmar una publicación que no podrá gestionar su dueño.
+      // No es una transacción del almacén; un fallo doble debe quedar visible.
+      try {
+        await this.catalog.withdraw(entry.id);
+        await this.publishers.forget(entry.id);
+      } catch (cleanupError) {
+        throw new AggregateError(
+          [registrationError, cleanupError],
+          `No se pudo registrar el propietario ni revertir la publicación ${entry.id}`,
+        );
+      }
+      throw registrationError;
+    }
     return { ...entry, canManage: true };
   }
 
