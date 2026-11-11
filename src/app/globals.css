@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --font-atkinson: system-ui, "Segoe UI", Arial, sans-serif;
-  --font-anybody: "Arial Narrow", "Liberation Sans Narrow", Impact, sans-serif;
+  /* --font-*-file las define next/font/local en layout.tsx; las demás son respaldo. */
+  --font-atkinson: var(--font-atkinson-file), system-ui, "Segoe UI", Arial, sans-serif;
+  --font-anybody: var(--font-anybody-file), "Arial Narrow", "Liberation Sans Narrow", Impact, sans-serif;
   color-scheme: light;
   --paper: #ffffff;
   --sheet: #ffffff;
@@ -93,8 +94,31 @@ body {
   }
 }
 
+.toast-in {
+  animation: toast-in 220ms ease-out;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.side-panel[open] {
+  animation: panel-in 260ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@keyframes panel-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .hang-in {
+  .hang-in,
+  .toast-in,
+  .side-panel[open] {
     animation: none;
   }
 }

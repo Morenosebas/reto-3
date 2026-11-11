@@ -1,141 +1,149 @@
 "use client";
 
-import { useState } from "react";
-import {
-  RESOURCE_MODALITIES,
-  type ResourceModality,
-} from "@/modules/resources/domain/ResourceAttributes";
-import { resourceApi, type ResourcePayload } from "@/modules/resources/presentation/resourceApi";
-import type { ResourceDTO } from "@/modules/resources/presentation/ResourceDTO";
-import { MODALITY_LABELS } from "@/modules/resources/presentation/labels";
-import { MODALITY_FILL } from "./modalityStyles";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useState, type ReactNode } from "react";
+import { SidePanel } from "@/components/shared/SidePanel";
+import { Toast, type ToastMessage } from "@/components/shared/Toast";
+import type { CatalogEntry } from "@/modules/resources/presentation/ResourceDTO";
 import { ResourceCard } from "./ResourceCard";
 import { ResourceForm } from "./ResourceForm";
 
-type Filter = ResourceModality | "all";
+export type Panel = { mode: "closed" } | { mode: "publish" } | { mode: "edit"; entry: CatalogEntry };
 
-export function ResourceManager({ initialResources }: { initialResources: ResourceDTO[] }) {
-  const [resources, setResources] = useState(initialResources);
-  const [editing, setEditing] = useState<ResourceDTO | null>(null);
+interface ResourceManagerProps {
+  /** Recursos ya filtrados en el servidor; se actualizan solos tras cada Server Action. */
+  entries: CatalogEntry[];
+  /** Titular de la página y buscador, renderizados en el servidor. */
+  hero: ReactNode;
+  toolbar: ReactNode;
+  hasFilters: boolean;
+  /** Panel abierto al llegar desde otra página (?publicar=1 o ?editar=id). */
+  initialPanel: Panel;
+}
+
+const PANEL_PARAMS = ["publicar", "editar"];
+
+export function ResourceManager({ entries, hero, toolbar, hasFilters, initialPanel }: ResourceManagerProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [panel, setPanel] = useState<Panel>(initialPanel);
+  const [formVersion, setFormVersion] = useState(0);
   const [justSavedId, setJustSavedId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<Filter>("all");
-  const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
 
-  const visible =
-    filter === "all" ? resources : resources.filter((r) => r.modality === filter);
+  const notify = useCallback((message: string, tone: ToastMessage["tone"] = "success") => {
+    setToast({ id: Date.now(), message, tone });
+  }, []);
+  const dismissToast = useCallback(() => setToast(null), []);
 
-  function countFor(option: Filter) {
-    return option === "all"
-      ? resources.length
-      : resources.filter((r) => r.modality === option).length;
+  // Al cerrar el panel se quitan ?publicar= y ?editar= de la URL, para que
+  // recargar la página no lo vuelva a abrir.
+  function closePanel() {
+    setPanel({ mode: "closed" });
+    if (!PANEL_PARAMS.some((param) => searchParams.has(param))) return;
+    const params = new URLSearchParams(searchParams);
+    PANEL_PARAMS.forEach((param) => params.delete(param));
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }
 
-  async function handleSubmit(payload: ResourcePayload) {
-    if (editing) {
-      const updated = await resourceApi.update(editing.id, payload);
-      setResources((current) => current.map((r) => (r.id === updated.id ? updated : r)));
-      setEditing(null);
-      setJustSavedId(updated.id);
-    } else {
-      const created = await resourceApi.create(payload);
-      setResources((current) => [created, ...current]);
-      setJustSavedId(created.id);
-      setFilter((current) => (current === "all" || current === created.modality ? current : "all"));
-    }
+  function handleSaved(entry: CatalogEntry, message: string) {
+    closePanel();
+    setFormVersion((version) => version + 1);
+    setJustSavedId(entry.id);
+    notify(message);
   }
 
-  async function handleDelete(resource: ResourceDTO) {
-    if (!window.confirm(`¿Eliminar "${resource.title}"? No se puede deshacer.`)) return;
-    setError(null);
-    try {
-      await resourceApi.remove(resource.id);
-      setResources((current) => current.filter((r) => r.id !== resource.id));
-      if (editing?.id === resource.id) setEditing(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo eliminar el recurso");
-    }
-  }
+  const editingId = panel.mode === "edit" ? panel.entry.id : null;
+  const publishButtonClass =
+    "bg-pen px-5 py-3 font-display text-lg font-extrabold text-sheet transition-colors [font-stretch:90%] hover:bg-pen-hover";
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[minmax(0,23rem)_1fr] lg:items-start lg:gap-14">
-      <div className="lg:sticky lg:top-6">
-        <ResourceForm
-          key={editing?.id ?? "new"}
-          resource={editing ?? undefined}
-          onSubmit={handleSubmit}
-          onCancel={() => setEditing(null)}
-        />
+    <>
+      <div className="flex items-center justify-between gap-4">
+        <Link href="/" className="font-display text-lg font-extrabold [font-stretch:150%]">
+          Reutiliza
+        </Link>
+        <button
+          type="button"
+          onClick={() => setPanel({ mode: "publish" })}
+          aria-label="Publicar un recurso"
+          className={publishButtonClass}
+        >
+          <span className="sm:hidden">Publicar</span>
+          <span className="hidden sm:inline">Publicar un recurso</span>
+        </button>
       </div>
 
+      {hero}
+
       <section aria-labelledby="published-heading" className="min-w-0">
-        <div className="mb-8 flex flex-col gap-4 border-b-2 border-ink pb-5">
-          <h2
-            id="published-heading"
-            className="font-display text-3xl font-extrabold [font-stretch:72%]"
-          >
-            Recursos publicados
-          </h2>
+        {toolbar}
 
-          <div role="group" aria-label="Filtrar por modalidad" className="flex flex-wrap gap-2">
-            {(["all", ...RESOURCE_MODALITIES] as const).map((option) => {
-              const active = filter === option;
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setFilter(option)}
-                  className={`flex items-center gap-2 rounded-full border-2 px-3.5 py-1.5 text-sm font-bold transition-colors ${
-                    active
-                      ? "border-ink bg-ink text-paper"
-                      : "border-ink/25 text-ink hover:border-ink"
-                  }`}
-                >
-                  {option !== "all" && (
-                    <span
-                      aria-hidden
-                      className={`size-3 rounded-full ring-1 ring-tag-ink/30 ${MODALITY_FILL[option]}`}
-                    />
-                  )}
-                  {option === "all" ? "Todos" : MODALITY_LABELS[option]}
-                  <span className="font-normal opacity-70">{countFor(option)}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {error && (
-          <p role="alert" className="mb-6 border-l-4 border-alert pl-3 text-sm font-bold text-alert">
-            {error}
-          </p>
-        )}
-
-        {visible.length === 0 ? (
+        {entries.length === 0 ? (
           <div className="border-2 border-dashed border-ink/30 px-6 py-14 text-center">
-            <p className="font-display text-2xl font-extrabold [font-stretch:72%]">
-              Aquí todavía no hay nada colgado
-            </p>
-            <p className="mt-2 text-ink-soft">
-              Publica un recurso desde el formulario y aparecerá en esta lista.
-            </p>
+            {hasFilters ? (
+              <>
+                <p className="font-display text-2xl font-extrabold [font-stretch:72%]">
+                  No encontramos nada con esos filtros
+                </p>
+                <p className="mt-2 text-ink-soft">
+                  Prueba con otra palabra o{" "}
+                  <Link href="/" scroll={false} className="font-bold text-ink underline decoration-2 underline-offset-4">
+                    mira todo el catálogo
+                  </Link>
+                  .
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-display text-2xl font-extrabold [font-stretch:72%]">
+                  Aquí todavía no hay nada colgado
+                </p>
+                <p className="mt-2 text-ink-soft">Lo que publiques aparecerá en esta lista.</p>
+                <button
+                  type="button"
+                  onClick={() => setPanel({ mode: "publish" })}
+                  className={`mt-6 ${publishButtonClass}`}
+                >
+                  Publicar un recurso
+                </button>
+              </>
+            )}
           </div>
         ) : (
-          <div className="columns-1 gap-6 sm:columns-2 2xl:columns-3">
-            {visible.map((resource) => (
+          <div className="columns-1 gap-6 sm:columns-2 lg:columns-3 2xl:columns-4">
+            {entries.map((resource) => (
               <ResourceCard
                 key={resource.id}
                 resource={resource}
-                isEditing={editing?.id === resource.id}
+                isEditing={editingId === resource.id}
                 justSaved={justSavedId === resource.id}
-                onEdit={() => setEditing(resource)}
-                onDelete={() => handleDelete(resource)}
+                onEdit={() => setPanel({ mode: "edit", entry: resource })}
+                onNotify={notify}
                 onAnimationEnd={() => setJustSavedId(null)}
               />
             ))}
           </div>
         )}
       </section>
-    </div>
+
+      <SidePanel
+        open={panel.mode !== "closed"}
+        label={panel.mode === "edit" ? "Editar recurso" : "Publicar un recurso"}
+        onClose={closePanel}
+      >
+        <ResourceForm
+          key={panel.mode === "edit" ? `edit-${panel.entry.id}` : `new-${formVersion}`}
+          resource={panel.mode === "edit" ? panel.entry : undefined}
+          onSaved={handleSaved}
+          onCancel={closePanel}
+        />
+      </SidePanel>
+
+      <Toast toast={toast} onDismiss={dismissToast} />
+    </>
   );
 }

@@ -1,10 +1,12 @@
-# Guion de sustentación de Reutiliza
+# Guion de demostración de patrones estructurales
 
-**Duración prevista: 12 minutos.**
+**Equipo:** Daniel Parra · Johan Sebastián González · Sebastián Vargas
 
-La exposición presenta el dominio, demuestra el CRUD y explica la aplicación de Factory Method y Singleton mediante los diagramas de clases y el código. El informe técnico se encuentra en [Actividad 4](actividad-4.md); este documento organiza exclusivamente la sustentación.
+La demostración relaciona tres problemas de Reutiliza con **Facade**, **Proxy** y **Adapter**, sus participantes UML y el código que los implementa. El [informe de patrones estructurales](patrones-estructurales.md) contiene la justificación, la investigación del framework y SOLID. Este guion no establece una duración obligatoria ni un reparto individual.
 
-## Preparación del entorno
+## Preparación
+
+Usar la versión que contiene los patrones estructurales, no una versión anterior de la entrega creacional.
 
 ```bash
 npm ci
@@ -15,36 +17,31 @@ npm run build -- --webpack
 npm run start
 ```
 
-La aplicación se abre en `http://localhost:3000`. Con el servidor activo, `npm run test:http` permite ejecutar las pruebas de integración. Los diagramas están disponibles en [Factory Method](uml/factory-method.svg) y [Singleton](uml/singleton.svg).
+Abrir `http://localhost:3000`. Para comprobar la API, ejecutar `npm run test:http` en otra terminal. Los resultados y sus límites están en el [registro de pruebas](verificacion.md).
 
-Durante el recorrido CRUD se utiliza una única instancia del servidor. Su reinicio elimina los datos de la sesión y restaura las publicaciones de ejemplo.
+Usar un solo servidor con almacenamiento en archivos, sin `RESOURCE_STORAGE=memory`, y la misma carpeta `.data/` antes y después del reinicio. Disponer de una segunda sesión de navegador privada para demostrar la ausencia de permiso. No borrar las cookies de la sesión que publica durante la prueba.
 
-## Secuencia de exposición
+## Recorrido
 
-| Tiempo | Contenido | Recurso de apoyo |
+| Paso | Demostración | Relación con el diseño |
 | --- | --- | --- |
-| 0:00–1:00 | Problema de reutilización y modalidades de entrega | Descripción del proyecto |
-| 1:00–3:30 | Publicar una donación, consultar el catálogo, editar título y estado, y eliminar; presentar intercambio y venta | Interfaz y API |
-| 3:30–5:00 | Validación de contraprestación y precio; rechazo de fracciones, booleanos, arrays y cuerpos JSON inválidos | Suites de pruebas y reglas del dominio |
-| 5:00–7:00 | Factory Method: creador abstracto, método protegido, creadores concretos, productos y clientes | UML, `ResourceCreator.ts`, `SaleResourceCreator.ts`, `UpdateResource.ts` |
-| 7:00–8:30 | Singleton: constructor privado, operación estática, almacén e inyección | UML, `InMemoryResourceRepository.ts`, `resourceModule.ts` |
-| 8:30–10:30 | Flujo entre capas y aplicación de SOLID | Informe técnico y estructura del módulo |
-| 10:30–12:00 | Resultados de pruebas, límites de persistencia y alcance de la solución; preguntas | Registro de pruebas |
+| 1. Problemas | Explicar la coordinación repetida del CRUD, la modificación de publicaciones ajenas y la pérdida de datos al reiniciar | Tres problemas y justificación de patrones |
+| 2. Facade | Publicar “Mesa de estudio”, con descripción válida, categoría muebles, ubicación Medellín y un número de demostración de formato válido; consultar, buscar y editar | `CommunityCatalog` coordina casos de uso mediante `ResourceCatalog`; los puntos de entrada no orquestan el subsistema |
+| 3. Proxy | Mostrar que el navegador que publicó puede editar; abrir el enlace del recurso en una sesión privada y comprobar que no ofrece gestión. La suite HTTP comprueba también el rechazo 403 a edición y eliminación por otro visitante | `OwnerProtectedCatalog`, `ResourceCatalog`, `PublisherRegistry` y `CommunityCatalog` |
+| 4. Adapter | Conservar el enlace, detener el servidor y volver a iniciarlo con la misma carpeta de datos. Volver a consultar la publicación | `UnstorageResourceRepository` adapta `Storage` al contrato `ResourceRepository`; fechas y entidades se reconstruyen desde JSON |
+| 5. UML y código | Mostrar cada diagrama y localizar sus clases, contratos y raíz de composición | [Facade](uml/facade.svg), [Proxy](uml/proxy.svg), [Adapter](uml/adapter.svg) y [diagrama integrado](uml/patrones-estructurales.svg) |
+| 6. Framework y SOLID | Explicar DAL con `server-only`, cookies, Server Actions y revalidación; relacionar cada mecanismo con el código | Informe, secciones 4.2 y 4.3 |
+| 7. Evidencia y límites | Mostrar los resultados realmente ejecutados, diferenciar historial de ejecución actual y retirar la publicación de demostración | Registro de pruebas y alcance del prototipo |
 
-## Escenarios de demostración
+## Archivos para mostrar
 
-| Modalidad | Datos | Resultado esperado |
-| --- | --- | --- |
-| Donación | “Mesa de estudio”, descripción de al menos diez caracteres, categoría muebles, ubicación “Medellín” | Publicación sin precio ni contraprestación |
-| Intercambio | “Libros de cálculo”, contraprestación “Libros de programación” | Publicación con el dato `wantedInReturn` |
-| Venta solidaria | “Retazos de madera”, precio 15000 COP | Publicación con precio válido |
-| Venta fuera del rango | Precio 500001 COP | Rechazo de la publicación |
-| Venta en el límite | Precio 500000 COP | Publicación aceptada |
+- `src/modules/resources/catalog/CommunityCatalog.ts`: fachada y coordinación.
+- `src/modules/resources/catalog/OwnerProtectedCatalog.ts`: autorización antes de editar o retirar.
+- `src/modules/resources/catalog/ResourceCatalog.ts` y `PublisherRegistry.ts`: contratos.
+- `src/modules/resources/infrastructure/UnstorageResourceRepository.ts`: adaptación de entidades y JSON; `toRecord` y `toResource` son funciones del módulo.
+- `src/modules/resources/resourceModule.ts` y `catalog/catalogAccess.ts`: composición, selección del repositorio e identidad del visitante.
+- `tests/structural-patterns.test.ts`: evidencia automatizada de los patrones.
 
-Las categorías de estos ejemplos corresponden a `furniture`, `books` y `materials` en la API. El formulario muestra sus etiquetas en español.
+## Límites que deben explicarse
 
-La consulta de un recurso desde peticiones sucesivas ilustra el acceso al mismo almacén del servidor. El reinicio del proceso permite explicar la pérdida de datos propia de la persistencia en memoria. Estas observaciones se circunscriben a una instancia de ejecución.
-
-## Distribución de contenidos
-
-Para un equipo de tres integrantes, la exposición puede distribuirse en dominio y CRUD; Factory Method y UML; y Singleton, SOLID y pruebas. El recorrido mantiene la relación entre problema, decisión de diseño, implementación y resultado para cada patrón.
+La cookie identifica un navegador, no una cuenta personal. Borrarla implica perder la capacidad de gestionar publicaciones propias. La persistencia en archivos se limita a un servidor; no se presenta como solución distribuida. El modo en memoria y los patrones creacionales se conservan como antecedente, pero no son el foco de esta entrega. No se deben atribuir al profesor los tiempos ni las decisiones de organización de este guion.

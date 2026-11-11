@@ -1,0 +1,65 @@
+digraph Adapter {
+ graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.55", ranksep="0.75", label="Reutiliza · Adapter\nPersistencia de recursos con unstorage", labelloc=t, fontsize=22, fontname="DejaVu Sans"];
+ node [shape=plain, fontname="DejaVu Sans", fontsize=11];
+ edge [fontname="DejaVu Sans", fontsize=10, color="#44516d"];
+
+ UseCases [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#fff5cf" COLOR="#2440d8">
+  <TR><TD>«cliente»<BR/><B>CreateResource / ListResources / GetResource<BR/>UpdateResource / DeleteResource</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">− repository: ResourceRepository<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Target [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eef4ff" COLOR="#2440d8">
+  <TR><TD>«interface»<BR/><B>ResourceRepository</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">+ findAll(): Promise&lt;Resource[]&gt;<BR ALIGN="LEFT"/>+ findById(id: string): Promise&lt;Resource | null&gt;<BR ALIGN="LEFT"/>+ save(resource: Resource): Promise&lt;void&gt;<BR ALIGN="LEFT"/>+ delete(id: string): Promise&lt;boolean&gt;<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Adapter [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#dfe8ff" COLOR="#2440d8">
+  <TR><TD>«adapter»<BR/><B>UnstorageResourceRepository</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">− storage: Storage<BR ALIGN="LEFT"/></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">+ constructor(storage: Storage)<BR ALIGN="LEFT"/>+ findAll(): Promise&lt;Resource[]&gt;<BR ALIGN="LEFT"/>+ findById(id): Promise&lt;Resource | null&gt;<BR ALIGN="LEFT"/>+ save(resource): Promise&lt;void&gt;<BR ALIGN="LEFT"/>+ delete(id): Promise&lt;boolean&gt;<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Memory [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eef4ff" COLOR="#2440d8">
+  <TR><TD>«singleton» (Actividad 4)<BR/><B>InMemoryResourceRepository</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">RESOURCE_STORAGE=memory<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Adaptee [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffe9e4" COLOR="#b3122b">
+  <TR><TD>«librería unstorage»<BR/><B>Storage</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">+ getKeys(base: string): Promise&lt;string[]&gt;<BR ALIGN="LEFT"/>+ getItem&lt;T&gt;(key: string): Promise&lt;T | null&gt;<BR ALIGN="LEFT"/>+ setItem(key: string, value: unknown): Promise&lt;void&gt;<BR ALIGN="LEFT"/>+ hasItem(key: string): Promise&lt;boolean&gt;<BR ALIGN="LEFT"/>+ removeItem(key: string): Promise&lt;void&gt;<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Driver [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffe9e4" COLOR="#b3122b">
+  <TR><TD>«driver»<BR/><B>fs-lite / memory</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">archivos en .data/resources y .data/publishers<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Record [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#f8fafc" COLOR="#2440d8">
+  <TR><TD>«JSON plano»<BR/><B>StoredResourceRecord</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">id, modality, title, description: string<BR ALIGN="LEFT"/>category, location, status: string<BR ALIGN="LEFT"/>wantedInReturn?: string · price?: number<BR ALIGN="LEFT"/>contactPhone?: string<BR ALIGN="LEFT"/>createdAt, updatedAt: string (ISO)<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Creator [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#f8fafc" COLOR="#2440d8">
+  <TR><TD>«abstract» Factory Method<BR/><B>ResourceCreator</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">+ create(draft, identity?): Resource<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Connection [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#fff5cf" COLOR="#2440d8">
+  <TR><TD>«módulo» una conexión por proceso<BR/><B>resourceStorage.ts</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">+ getResourceStorage(): Storage<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Note [shape=note, style=filled, fillcolor="#f8fafc", color="#8a94ad", fontname="DejaVu Sans", fontsize=10, label="Target: ResourceRepository · Adaptee: Storage (unstorage)\lAdapter: UnstorageResourceRepository.\ltoRecord y toResource son funciones internas del módulo,\lno métodos de la clase.\lsave: Resource → StoredResourceRecord → setItem(\"resources:id\")\lfind: getItem → StoredResourceRecord → ResourceCreator → Resource\l"];
+
+ UseCases -> Target [arrowhead=vee, label=" repository  1"];
+ Adapter -> Target [style=dashed, arrowhead=empty, label=" implementa"];
+ Memory -> Target [style=dashed, arrowhead=empty, label=" implementa"];
+ Adapter -> Adaptee [arrowhead=vee, label=" storage  1\n (adapta)"];
+ Adapter -> Record [style=dashed, arrowhead=vee, label=" traduce"];
+ Adapter -> Creator [style=dashed, arrowhead=vee, label=" reconstruye con"];
+ Adaptee -> Driver [arrowhead=vee, label=" driver  1"];
+ Connection -> Adaptee [style=dashed, arrowhead=vee, label=" «create» una vez"];
+ Note -> Adapter [style=dotted, arrowhead=none];
+ {rank=same; Adapter; Memory}
+ {rank=same; Adaptee; Record; Creator}
+}

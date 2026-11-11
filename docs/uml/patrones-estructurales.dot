@@ -1,0 +1,40 @@
+digraph PatronesEstructurales {
+ graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.5", ranksep="0.6", label="Reutiliza · Patrones estructurales\nProxy → Facade → Adapter en el flujo de una petición", labelloc=t, fontsize=22, fontname="DejaVu Sans", newrank=true];
+ node [shape=plain, fontname="DejaVu Sans", fontsize=11];
+ edge [fontname="DejaVu Sans", fontsize=10, color="#44516d"];
+
+ Clients [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#fff5cf" COLOR="#2440d8"><TR><TD>«cliente»<BR/><B>Páginas, Server Actions y Route Handlers</B></TD></TR></TABLE>>];
+ Access [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#fff5cf" COLOR="#2440d8"><TR><TD>«Data Access Layer»<BR/><B>catalogAccess.ts</B></TD></TR><HR/><TR><TD ALIGN="LEFT">+ getCatalog()<BR ALIGN="LEFT"/>+ getPublishingCatalog()<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+ Catalog [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eef4ff" COLOR="#2440d8"><TR><TD>«interface»<BR/><B>ResourceCatalog</B></TD></TR><HR/><TR><TD ALIGN="LEFT">+ browse(criteria?) · find() · publish()<BR ALIGN="LEFT"/>+ edit() · withdraw()<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+
+ subgraph cluster_proxy {
+  label="Proxy"; labeljust=l; fontsize=14; fontname="DejaVu Sans"; style="rounded,dashed"; color="#2440d8";
+  Proxy [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#dfe8ff" COLOR="#2440d8"><TR><TD>«proxy»<BR/><B>OwnerProtectedCatalog</B></TD></TR><HR/><TR><TD ALIGN="LEFT">− visitorId: string | null<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+  Registry [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eef4ff" COLOR="#2440d8"><TR><TD>«interface»<BR/><B>PublisherRegistry</B></TD></TR></TABLE>>];
+ }
+
+ subgraph cluster_facade {
+  label="Facade"; labeljust=l; fontsize=14; fontname="DejaVu Sans"; style="rounded,dashed"; color="#2440d8";
+  Facade [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#dfe8ff" COLOR="#2440d8"><TR><TD>«facade»<BR/><B>CommunityCatalog</B></TD></TR></TABLE>>];
+  UseCases [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eef4ff" COLOR="#2440d8"><TR><TD>«subsistema»<BR/><B>Casos de uso CRUD</B></TD></TR><HR/><TR><TD ALIGN="LEFT">Create · List · Get · Update · Delete<BR ALIGN="LEFT"/>ResourceSchemas · ResourceCreator<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+ }
+
+ subgraph cluster_adapter {
+  label="Adapter"; labeljust=l; fontsize=14; fontname="DejaVu Sans"; style="rounded,dashed"; color="#2440d8";
+  Target [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eef4ff" COLOR="#2440d8"><TR><TD>«interface»<BR/><B>ResourceRepository</B></TD></TR></TABLE>>];
+  Adapter [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#dfe8ff" COLOR="#2440d8"><TR><TD>«adapter»<BR/><B>UnstorageResourceRepository</B></TD></TR></TABLE>>];
+  Adaptee [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffe9e4" COLOR="#b3122b"><TR><TD>«librería unstorage»<BR/><B>Storage</B></TD></TR></TABLE>>];
+ }
+
+ Clients -> Access [style=dashed, arrowhead=vee, label=" obtiene"];
+ Clients -> Catalog [style=dashed, arrowhead=vee, label=" usa"];
+ Access -> Proxy [style=dashed, arrowhead=vee, label=" «create»"];
+ Proxy -> Catalog [style=dashed, arrowhead=empty];
+ Facade -> Catalog [style=dashed, arrowhead=empty];
+ Proxy -> Catalog [arrowhead=vee, label=" catalog  1\n (delega)"];
+ Proxy -> Registry [arrowhead=vee];
+ Facade -> UseCases [arrowhead=vee, label=" coordina"];
+ UseCases -> Target [arrowhead=vee, label=" repository"];
+ Adapter -> Target [style=dashed, arrowhead=empty];
+ Adapter -> Adaptee [arrowhead=vee, label=" adapta"];
+}

@@ -1,0 +1,57 @@
+digraph Facade {
+ graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.45", ranksep="0.7", label="Reutiliza · Facade\nCatálogo comunitario de recursos", labelloc=t, fontsize=22, fontname="DejaVu Sans", compound=true];
+ node [shape=plain, fontname="DejaVu Sans", fontsize=11];
+ edge [fontname="DejaVu Sans", fontsize=10, color="#44516d"];
+
+ Clients [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#fff5cf" COLOR="#2440d8">
+  <TR><TD>«cliente»<BR/><B>Páginas, Server Actions y Route Handlers</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">Páginas / y /recursos/[id] (Server Components)<BR ALIGN="LEFT"/>recursos/actions.ts (Server Actions del formulario)<BR ALIGN="LEFT"/>GET y POST /api/resources<BR ALIGN="LEFT"/>GET, PATCH y DELETE /api/resources/[id]<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Catalog [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eef4ff" COLOR="#2440d8">
+  <TR><TD>«interface»<BR/><B>ResourceCatalog</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">+ browse(criteria?: ResourceSearchCriteria): Promise&lt;CatalogEntry[]&gt;<BR ALIGN="LEFT"/>+ find(id: string): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>+ publish(input: unknown): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>+ edit(id: string, changes: unknown): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>+ withdraw(id: string): Promise&lt;void&gt;<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ Facade [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#dfe8ff" COLOR="#2440d8">
+  <TR><TD>«facade»<BR/><B>CommunityCatalog</B></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">− useCases: ResourceUseCases<BR ALIGN="LEFT"/></TD></TR><HR/>
+  <TR><TD ALIGN="LEFT">+ constructor(useCases: ResourceUseCases)<BR ALIGN="LEFT"/>+ browse(criteria?): Promise&lt;CatalogEntry[]&gt;<BR ALIGN="LEFT"/>+ find(id): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>+ publish(input): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>+ edit(id, changes): Promise&lt;CatalogEntry&gt;<BR ALIGN="LEFT"/>+ withdraw(id): Promise&lt;void&gt;<BR ALIGN="LEFT"/></TD></TR>
+ </TABLE>>];
+
+ subgraph cluster_subsystem {
+  label="Subsistema de recursos (oculto para los clientes)"; labeljust=l; fontsize=13; fontname="DejaVu Sans"; style="rounded,dashed"; color="#8a94ad";
+  List [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#eef4ff" COLOR="#2440d8"><TR><TD><B>ListResources</B></TD></TR><HR/><TR><TD ALIGN="LEFT">+ execute(criteria?): Promise&lt;Resource[]&gt;</TD></TR></TABLE>>];
+  Get [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#eef4ff" COLOR="#2440d8"><TR><TD><B>GetResource</B></TD></TR><HR/><TR><TD ALIGN="LEFT">+ execute(id): Promise&lt;Resource&gt;</TD></TR></TABLE>>];
+  Create [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#eef4ff" COLOR="#2440d8"><TR><TD><B>CreateResource</B></TD></TR><HR/><TR><TD ALIGN="LEFT">+ execute(input): Promise&lt;Resource&gt;</TD></TR></TABLE>>];
+  Update [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#eef4ff" COLOR="#2440d8"><TR><TD><B>UpdateResource</B></TD></TR><HR/><TR><TD ALIGN="LEFT">+ execute(id, input): Promise&lt;Resource&gt;</TD></TR></TABLE>>];
+  Delete [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#eef4ff" COLOR="#2440d8"><TR><TD><B>DeleteResource</B></TD></TR><HR/><TR><TD ALIGN="LEFT">+ execute(id): Promise&lt;void&gt;</TD></TR></TABLE>>];
+  Schemas [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#f8fafc" COLOR="#2440d8"><TR><TD>«módulo»<BR/><B>ResourceSchemas</B></TD></TR><HR/><TR><TD ALIGN="LEFT">+ parseResourceCreation(input)<BR ALIGN="LEFT"/>+ parseResourcePatch(input)<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+  Creator [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#f8fafc" COLOR="#2440d8"><TR><TD>«abstract»<BR/><B>ResourceCreator</B></TD></TR><HR/><TR><TD ALIGN="LEFT">Factory Method (Actividad 4)</TD></TR></TABLE>>];
+  Repo [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#f8fafc" COLOR="#2440d8"><TR><TD>«interface»<BR/><B>ResourceRepository</B></TD></TR></TABLE>>];
+  Dto [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#f8fafc" COLOR="#2440d8"><TR><TD>«módulo»<BR/><B>ResourceDTO</B></TD></TR><HR/><TR><TD ALIGN="LEFT">+ toResourceDTO(resource): ResourceDTO</TD></TR></TABLE>>];
+  {rank=same; List; Get; Create; Update; Delete}
+ }
+
+ Note [shape=note, style=filled, fillcolor="#f8fafc", color="#8a94ad", fontname="DejaVu Sans", fontsize=10, label="Los clientes solo dependen de ResourceCatalog.\lCommunityCatalog coordina los cinco casos de uso\ly convierte cada Resource en CatalogEntry (DTO).\lValidación, fábrica y repositorio quedan ocultos.\lbrowse(criteria) también resuelve la búsqueda.\l"];
+
+ Clients -> Catalog [style=dashed, arrowhead=vee, label=" usa"];
+ Facade -> Catalog [style=dashed, arrowhead=empty, label=" implementa"];
+ Facade -> List [arrowhead=vee, label=" coordina"];
+ Facade -> Get [arrowhead=vee];
+ Facade -> Create [arrowhead=vee];
+ Facade -> Update [arrowhead=vee];
+ Facade -> Delete [arrowhead=vee];
+ Facade -> Dto [style=dashed, arrowhead=vee, label=" convierte"];
+ Create -> Schemas [style=dashed, arrowhead=vee];
+ Update -> Schemas [style=dashed, arrowhead=vee];
+ Create -> Creator [style=dashed, arrowhead=vee];
+ Update -> Creator [style=dashed, arrowhead=vee];
+ List -> Repo [arrowhead=vee];
+ Get -> Repo [arrowhead=vee];
+ Create -> Repo [arrowhead=vee];
+ Update -> Repo [arrowhead=vee];
+ Delete -> Repo [arrowhead=vee];
+ Note -> Facade [style=dotted, arrowhead=none];
+ {rank=same; Clients; Note}
+}

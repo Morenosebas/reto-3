@@ -11,6 +11,8 @@ export interface BaseResourceProps {
   category: ResourceCategory;
   location: string;
   status: ResourceStatus;
+  /** Celular colombiano de quien publica, 10 dígitos sin indicativo. */
+  contactPhone?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,6 +26,7 @@ export abstract class Resource {
   readonly category: ResourceCategory;
   readonly location: string;
   readonly status: ResourceStatus;
+  readonly contactPhone?: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 
@@ -34,6 +37,7 @@ export abstract class Resource {
     this.category = props.category;
     this.location = props.location;
     this.status = props.status;
+    this.contactPhone = props.contactPhone;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
   }
