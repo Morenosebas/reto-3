@@ -4,14 +4,7 @@ import type { CatalogEntry } from "../presentation/ResourceDTO";
 import type { PublisherRegistry } from "./PublisherRegistry";
 import type { ResourceCatalog } from "./ResourceCatalog";
 
-/**
- * Proxy de protección: tiene la misma interfaz que el catálogo real y decide,
- * antes de delegar, si el visitante puede hacer la operación. Solo quien
- * publicó un recurso puede editarlo o retirarlo.
- *
- * `visitorId` es la huella de la clave de publicante del visitante, o null si
- * todavía no ha publicado nada desde este navegador.
- */
+
 export class OwnerProtectedCatalog implements ResourceCatalog {
   constructor(
     private readonly catalog: ResourceCatalog,
@@ -36,8 +29,6 @@ export class OwnerProtectedCatalog implements ResourceCatalog {
     try {
       await this.publishers.register(entry.id, this.visitorId);
     } catch (registrationError) {
-      // Compensación: no confirmar una publicación que no podrá gestionar su dueño.
-      // No es una transacción del almacén; un fallo doble debe quedar visible.
       try {
         await this.catalog.withdraw(entry.id);
         await this.publishers.forget(entry.id);
@@ -74,8 +65,6 @@ export class OwnerProtectedCatalog implements ResourceCatalog {
 
   private async assertIsPublisher(id: string): Promise<void> {
     if (await this.isPublisherOf(id)) return;
-    // Si el recurso no existe, el catálogo real responde que no se encontró;
-    // solo si existe se informa que el visitante no puede gestionarlo.
     await this.catalog.find(id);
     throw new NotResourcePublisherError();
   }
