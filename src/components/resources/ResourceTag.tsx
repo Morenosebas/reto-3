@@ -3,22 +3,19 @@ import type { ReactNode } from "react";
 import type { ResourceDTO } from "@/modules/resources/presentation/ResourceDTO";
 import {
   CATEGORY_LABELS,
-  formatPrice,
   formatRelativeDate,
   MODALITY_LABELS,
   STATUS_LABELS,
 } from "@/modules/resources/presentation/labels";
+import { outreachFor } from "@/modules/resources/presentation/outreach";
 import { MODALITY_FILL } from "./modalityStyles";
 
 export function modalityValue(resource: ResourceDTO): string {
-  switch (resource.modality) {
-    case "donation":
-      return "Gratis";
-    case "exchange":
-      return resource.wantedInReturn ? `Lo cambio por ${resource.wantedInReturn}` : "Lo cambio por…";
-    case "sale":
-      return resource.price !== undefined ? formatPrice(resource.price) : "Precio por definir";
-  }
+  return outreachFor(resource.modality).tagValue({
+    title: resource.title,
+    wantedInReturn: resource.wantedInReturn,
+    price: resource.price,
+  });
 }
 
 interface ResourceTagProps {

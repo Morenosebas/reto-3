@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="720" viewBox="0 0 1100 720">
+  <rect width="1100" height="720" fill="#ffffff"/>
+  <text x="550" y="36" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1a1a1a">Reutiliza · Patrón State</text>
+
+  <!-- Client -->
+  <rect x="40" y="70" width="200" height="110" fill="#f5f5f5" stroke="#666666" stroke-width="1.5"/>
+  <line x1="40" y1="100" x2="240" y2="100" stroke="#666666" stroke-width="1"/>
+  <text x="140" y="92" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700">Clientes</text>
+  <text x="52" y="122" font-family="Arial" font-size="12" fill="#333">UpdateResource</text>
+  <text x="52" y="142" font-family="Arial" font-size="12" fill="#333">ContactButton</text>
+  <text x="52" y="162" font-family="Arial" font-size="12" fill="#333">OwnerActions</text>
+
+  <!-- PublicationStatus -->
+  <rect x="400" y="55" width="300" height="175" fill="#fff2cc" stroke="#d6b656" stroke-width="3"/>
+  <line x1="400" y1="85" x2="700" y2="85" stroke="#d6b656" stroke-width="1.5"/>
+  <line x1="400" y1="115" x2="700" y2="115" stroke="#d6b656" stroke-width="1"/>
+  <text x="550" y="76" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700">PublicationStatus</text>
+  <text x="412" y="106" font-family="Arial" font-size="11">− lifecycle : ListingLifecycle</text>
+  <text x="412" y="136" font-family="Arial" font-size="11">+ code() : ResourceStatus</text>
+  <text x="412" y="154" font-family="Arial" font-size="11">+ allowsVisitorContact() : boolean</text>
+  <text x="412" y="172" font-family="Arial" font-size="11">+ noticeForVisitor() : string</text>
+  <text x="412" y="190" font-family="Arial" font-size="11">+ allowedMoves() : ResourceStatus[]</text>
+  <text x="412" y="208" font-family="Arial" font-size="11">+ transitionTo(next) : PublicationStatus</text>
+
+  <!-- Note -->
+  <path d="M780,60 L1040,60 L1040,155 L1025,170 L780,170 Z" fill="#fff9e6" stroke="#d6b656" stroke-width="1.5"/>
+  <polyline points="1025,170 1025,155 1040,155" fill="none" stroke="#d6b656" stroke-width="1.5"/>
+  <text x="795" y="88" font-family="Arial" font-size="12" font-weight="700">Participantes</text>
+  <text x="795" y="110" font-family="Arial" font-size="11">Context → PublicationStatus</text>
+  <text x="795" y="128" font-family="Arial" font-size="11">State → ListingLifecycle</text>
+  <text x="795" y="146" font-family="Arial" font-size="11">Concrete → Available / Reserved / Delivered</text>
+
+  <!-- ListingLifecycle -->
+  <rect x="400" y="280" width="300" height="145" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
+  <line x1="400" y1="325" x2="700" y2="325" stroke="#6c8ebf" stroke-width="1"/>
+  <text x="550" y="300" text-anchor="middle" font-family="Arial" font-size="11" font-style="italic">«interface»</text>
+  <text x="550" y="318" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700">ListingLifecycle</text>
+  <text x="412" y="348" font-family="Arial" font-size="11">+ code : ResourceStatus</text>
+  <text x="412" y="366" font-family="Arial" font-size="11">+ allowsVisitorContact() : boolean</text>
+  <text x="412" y="384" font-family="Arial" font-size="11">+ noticeForVisitor() : string</text>
+  <text x="412" y="402" font-family="Arial" font-size="11">+ canMoveTo / allowedMoves()</text>
+
+  <!-- Concrete states -->
+  <rect x="40" y="500" width="280" height="120" fill="#d5e8d4" stroke="#82b366" stroke-width="2"/>
+  <line x1="40" y1="530" x2="320" y2="530" stroke="#82b366" stroke-width="1"/>
+  <text x="180" y="522" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700">AvailableListing</text>
+  <text x="52" y="552" font-family="Arial" font-size="11">+ code = "available"</text>
+  <text x="52" y="572" font-family="Arial" font-size="11">+ contacto visitante → sí</text>
+  <text x="52" y="592" font-family="Arial" font-size="11">+ moves → reserved, delivered</text>
+
+  <rect x="410" y="500" width="280" height="120" fill="#d5e8d4" stroke="#82b366" stroke-width="2"/>
+  <line x1="410" y1="530" x2="690" y2="530" stroke="#82b366" stroke-width="1"/>
+  <text x="550" y="522" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700">ReservedListing</text>
+  <text x="422" y="552" font-family="Arial" font-size="11">+ code = "reserved"</text>
+  <text x="422" y="572" font-family="Arial" font-size="11">+ contacto visitante → no</text>
+  <text x="422" y="592" font-family="Arial" font-size="11">+ moves → available, delivered</text>
+
+  <rect x="780" y="500" width="280" height="120" fill="#d5e8d4" stroke="#82b366" stroke-width="2"/>
+  <line x1="780" y1="530" x2="1060" y2="530" stroke="#82b366" stroke-width="1"/>
+  <text x="920" y="522" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700">DeliveredListing</text>
+  <text x="792" y="552" font-family="Arial" font-size="11">+ code = "delivered"</text>
+  <text x="792" y="572" font-family="Arial" font-size="11">+ contacto visitante → no</text>
+  <text x="792" y="592" font-family="Arial" font-size="11">+ moves → available</text>
+
+  <!-- Edges -->
+  <defs>
+    <marker id="open" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8" fill="none" stroke="#333" stroke-width="1.2"/>
+    </marker>
+    <marker id="empty" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto">
+      <path d="M0,0 L12,5 L0,10 Z" fill="#ffffff" stroke="#333" stroke-width="1.2"/>
+    </marker>
+  </defs>
+  <line x1="240" y1="125" x2="400" y2="140" stroke="#333" stroke-width="1.4" marker-end="url(#open)"/>
+  <text x="300" y="118" font-family="Arial" font-size="11" fill="#444">usa</text>
+  <line x1="550" y1="230" x2="550" y2="280" stroke="#333" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#empty)"/>
+  <text x="562" y="258" font-family="Arial" font-size="11" fill="#444">lifecycle</text>
+  <line x1="180" y1="500" x2="480" y2="425" stroke="#333" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#empty)"/>
+  <line x1="550" y1="500" x2="550" y2="425" stroke="#333" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#empty)"/>
+  <line x1="920" y1="500" x2="620" y2="425" stroke="#333" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#empty)"/>
+
+  <text x="550" y="660" text-anchor="middle" font-family="Arial" font-size="12" fill="#555">Cada estado concreto define contacto y transiciones permitidas</text>
+  <text x="550" y="682" text-anchor="middle" font-family="Arial" font-size="12" fill="#555">PublicationStatus delega el comportamiento al estado actual</text>
+</svg>
