@@ -5,10 +5,8 @@ import { useState, useTransition } from "react";
 import { changeResourceStatus, withdrawResource } from "@/app/recursos/actions";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import type { ToastMessage } from "@/components/shared/Toast";
-import {
-  RESOURCE_STATUSES,
-  type ResourceStatus,
-} from "@/modules/resources/domain/ResourceAttributes";
+import { PublicationStatus } from "@/modules/resources/domain/lifecycle";
+import type { ResourceStatus } from "@/modules/resources/domain/ResourceAttributes";
 import type { CatalogEntry } from "@/modules/resources/presentation/ResourceDTO";
 import { formatContactPhone } from "@/modules/resources/presentation/contact";
 import { STATUS_LABELS } from "@/modules/resources/presentation/labels";
@@ -56,6 +54,8 @@ export function OwnerActions({
   }
 
   const linkClass = "underline decoration-2 underline-offset-4 hover:decoration-[3px]";
+  const lifecycle = new PublicationStatus(resource.status);
+  const statusOptions: ResourceStatus[] = [resource.status, ...lifecycle.allowedMoves()];
 
   return (
     <div className="mt-4 flex flex-col gap-4">
@@ -79,7 +79,7 @@ export function OwnerActions({
       <fieldset disabled={pending}>
         <legend className="mb-1.5 text-sm font-bold">Estado</legend>
         <div className="flex flex-wrap gap-1.5">
-          {RESOURCE_STATUSES.map((status) => {
+          {statusOptions.map((status) => {
             const active = resource.status === status;
             return (
               <button

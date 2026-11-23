@@ -5,7 +5,7 @@ export function formatContactPhone(phone: string): string {
   return `+${COLOMBIA_DIAL_CODE} ${phone.slice(0, 3)} ${phone.slice(3, 6)} ${phone.slice(6)}`;
 }
 
-/** Mensaje con el que quien visita pide el objeto. */
+/** Mensaje de prueba genérico. El contacto real usa outreachFor por modalidad. */
 export function requestMessage(title: string): string {
   return `Hola, vi tu publicación «${title}» en Reutiliza. ¿Sigue disponible?`;
 }

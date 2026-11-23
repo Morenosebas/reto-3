@@ -1,6 +1,6 @@
 # Reutiliza
 
-Plataforma para publicar, consultar, editar y eliminar recursos destinados a **donación, intercambio y venta solidaria**. La aplicación integra una interfaz React y una API HTTP mediante un monolito modular con Next.js. El módulo de recursos implementa los patrones creacionales **Factory Method** y **Singleton** y los patrones estructurales **Facade**, **Proxy** y **Adapter**.
+Plataforma para publicar, consultar, editar y eliminar recursos destinados a **donación, intercambio y venta solidaria**. La aplicación integra una interfaz React y una API HTTP mediante un monolito modular con Next.js. El módulo de recursos implementa los patrones creacionales **Factory Method** y **Singleton**, los estructurales **Facade**, **Proxy** y **Adapter**, y los de comportamiento **State** y **Strategy**.
 
 ## Integrantes
 
@@ -127,11 +127,11 @@ src/app/api/resources/                  Adaptadores HTTP
 src/components/resources/              Formulario, catálogo, etiquetas y acciones
 src/components/shared/                 Diálogo de confirmación y avisos
 src/modules/resources/
-  domain/                              Entidades, contratos y creadores
+  domain/                              Entidades, contratos, creadores y State (lifecycle)
   application/                         Casos de uso CRUD
   catalog/                             Facade, Proxy y Data Access Layer
   infrastructure/                      Adapter de unstorage y almacén en memoria
-  presentation/                        DTO, cliente HTTP y formato
+  presentation/                        DTO, formato y Strategy (outreach)
   resourceModule.ts                    Composición e inyección de dependencias
 ```
 
@@ -155,6 +155,14 @@ El [informe técnico](docs/actividad-4.md) amplía la justificación, los partic
 
 El [informe de patrones estructurales](docs/patrones-estructurales.md) desarrolla los problemas, la justificación, la correspondencia con los diagramas y la verificación.
 
+### Elección de patrones de comportamiento
+
+**State.** El estado de la publicación (`available`, `reserved`, `delivered`) condiciona el contacto, los avisos y las transiciones permitidas. `PublicationStatus` delega en `AvailableListing`, `ReservedListing` y `DeliveredListing`.
+
+**Strategy.** Donación, intercambio y venta requieren textos distintos para WhatsApp, entrega y etiqueta. `ModalityOutreach` y sus estrategias concretas (`DonationOutreach`, `ExchangeOutreach`, `SaleOutreach`) sustituyen los `switch` de presentación.
+
+El [informe de patrones de comportamiento](docs/patrones-comportamiento.md) detalla problemas, UML e implementación. Los diagramas editables están en [uml-state.drawio](docs/uml-state.drawio) y [uml-strategy.drawio](docs/uml-strategy.drawio).
+
 ## Tecnologías
 
 Next.js 16.3.6, React 19.2.8, TypeScript, Zod 4.6.5, unstorage 1.17, Tailwind CSS 4 y ESLint 9. Las fuentes Anybody y Atkinson Hyperlegible Next están autoalojadas en `src/app/fonts` (licencia OFL) y se cargan con `next/font/local`, así que la compilación no descarga fuentes externas y la tipografía es la misma en todos los equipos.
@@ -167,6 +175,8 @@ El almacén en archivos (`fs-lite`) sirve para un único servidor; un despliegue
 
 - [Informe técnico: arquitectura, patrones creacionales y SOLID](docs/actividad-4.md).
 - [Informe de patrones estructurales: Facade, Proxy y Adapter](docs/patrones-estructurales.md).
+- [Informe de patrones de comportamiento: State y Strategy](docs/patrones-comportamiento.md).
 - [Diagramas de clases UML](docs/uml/README.md).
 - [Registro de pruebas](docs/verificacion.md).
 - [Guion de sustentación](docs/demo.md).
+- [Presentación](docs/Reutiliza-Patrones-Comportamiento.pptx).

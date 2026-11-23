@@ -6,13 +6,11 @@ import { ResourceDetailActions } from "@/components/resources/ResourceDetailActi
 import { ResourceTag } from "@/components/resources/ResourceTag";
 import { ShareButton } from "@/components/resources/ShareButton";
 import { findCatalogEntry, getCatalog } from "@/modules/resources/catalog/catalogAccess";
+import { PublicationStatus } from "@/modules/resources/domain/lifecycle";
 import { STATUS_VIEWS } from "@/modules/resources/presentation/catalogFilters";
 import type { CatalogEntry } from "@/modules/resources/presentation/ResourceDTO";
-import {
-  CATEGORY_LABELS,
-  formatPrice,
-  MODALITY_LABELS,
-} from "@/modules/resources/presentation/labels";
+import { CATEGORY_LABELS, MODALITY_LABELS } from "@/modules/resources/presentation/labels";
+import { outreachFor } from "@/modules/resources/presentation/outreach";
 
 export async function generateMetadata({ params }: PageProps<"/recursos/[id]">): Promise<Metadata> {
   const { id } = await params;
@@ -37,7 +35,9 @@ export default async function ResourcePage({ params }: PageProps<"/recursos/[id]
   const related = (await catalog.browse({ category: resource.category, statuses: STATUS_VIEWS.active }))
     .filter((entry) => entry.id !== resource.id)
     .slice(0, 3);
-  const contactable = resource.status === "available" && Boolean(resource.contactPhone);
+  const status = new PublicationStatus(resource.status);
+  const contactable = status.allowsVisitorContact() && Boolean(resource.contactPhone);
+  const visitorNotice = status.noticeForVisitor();
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-20 pt-6 sm:px-8">
@@ -67,10 +67,8 @@ export default async function ResourcePage({ params }: PageProps<"/recursos/[id]
               <p className="mt-2 leading-relaxed text-ink-soft">
                 {contactable
                   ? "Escríbele por WhatsApp a quien lo publicó para coordinar la entrega."
-                  : resource.status === "reserved"
-                    ? "Quien lo publicó ya lo apartó para otra persona."
-                    : resource.status === "delivered"
-                      ? "Ya fue entregado. En el catálogo hay más cosas esperando."
+                  : visitorNotice
+                    ? visitorNotice
                     : "Quien lo publicó no dejó un número de contacto."}
               </p>
             )}
@@ -114,12 +112,9 @@ export default async function ResourcePage({ params }: PageProps<"/recursos/[id]
 }
 
 function deliveryText(resource: CatalogEntry): string {
-  switch (resource.modality) {
-    case "donation":
-      return `Quien lo publicó lo regala. Se recoge en ${resource.location}.`;
-    case "exchange":
-      return `Quien lo publicó lo cambia por: ${resource.wantedInReturn}. Se recoge en ${resource.location}.`;
-    case "sale":
-      return `Se vende a un precio solidario de ${formatPrice(resource.price ?? 0)}. Se recoge en ${resource.location}.`;
-  }
+  return outreachFor(resource.modality).describeHandoff(resource.location, {
+    title: resource.title,
+    wantedInReturn: resource.wantedInReturn,
+    price: resource.price,
+  });
 }

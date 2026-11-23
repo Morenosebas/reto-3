@@ -1,0 +1,30 @@
+digraph Strategy {
+  graph [rankdir=TB, bgcolor="white", pad="0.4", nodesep="0.55", ranksep="0.7",
+         label="Reutiliza · Patrón Strategy", labelloc=t, fontsize=20, fontname="Arial"];
+  node [shape=record, fontname="Arial", fontsize=11, style="filled"];
+  edge [fontname="Arial", fontsize=10];
+
+  Client [label="{Clientes|ContactButton\lResourceTag\lpágina /recursos/[id]\l}", fillcolor="#f5f5f5", color="#666666"];
+
+  Strategy [label="{«interface»\nModalityOutreach\n«Strategy»|+ modality : ResourceModality\l+ composeRequest(details) : string\l+ describeHandoff(location, details) : string\l+ tagValue(details) : string\l}",
+            fillcolor="#dae8fc", color="#6c8ebf", penwidth=2.5];
+
+  Donation [label="{DonationOutreach\n«ConcreteStrategy»|+ modality = donation\l+ composeRequest → mensaje de donación\l+ tagValue → \"Gratis\"\l}",
+            fillcolor="#d5e8d4", color="#82b366"];
+  Exchange [label="{ExchangeOutreach\n«ConcreteStrategy»|+ modality = exchange\l+ composeRequest → mensaje de intercambio\l+ tagValue → contraprestación\l}",
+            fillcolor="#d5e8d4", color="#82b366"];
+  Sale [label="{SaleOutreach\n«ConcreteStrategy»|+ modality = sale\l+ composeRequest → mensaje de venta\l+ tagValue → precio COP\l}",
+        fillcolor="#d5e8d4", color="#82b366"];
+
+  Selector [label="{outreachFor(modality)\n«selector»|+ outreachFor(m) : ModalityOutreach\l}",
+            fillcolor="#fff2cc", color="#d6b656", penwidth=2];
+
+  Client -> Strategy [label="usa", arrowhead=open];
+  Selector -> Strategy [label="selecciona", arrowhead=open];
+  Donation -> Strategy [style=dashed, arrowhead=empty];
+  Exchange -> Strategy [style=dashed, arrowhead=empty];
+  Sale -> Strategy [style=dashed, arrowhead=empty];
+  Selector -> Donation [style=dashed, arrowhead=open];
+  Selector -> Exchange [style=dashed, arrowhead=open];
+  Selector -> Sale [style=dashed, arrowhead=open];
+}

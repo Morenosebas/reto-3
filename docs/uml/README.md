@@ -1,6 +1,6 @@
 # Diagramas de clases UML
 
-Los diagramas describen los participantes de los patrones creacionales (Factory Method y Singleton) y estructurales (Facade, Proxy y Adapter) y sus relaciones en el módulo de recursos de Reutiliza.
+Los diagramas describen los participantes de los patrones creacionales (Factory Method y Singleton), estructurales (Facade, Proxy y Adapter) y de comportamiento (State y Strategy) en el módulo de recursos de Reutiliza.
 
 | Patrón | Fuente editable | Diagrama |
 | --- | --- | --- |
@@ -10,6 +10,8 @@ Los diagramas describen los participantes de los patrones creacionales (Factory 
 | Proxy | [proxy.dot](proxy.dot) | [SVG](proxy.svg) |
 | Adapter | [adapter.dot](adapter.dot) | [SVG](adapter.svg) |
 | Facade, Proxy y Adapter integrados | [patrones-estructurales.dot](patrones-estructurales.dot) | [SVG](patrones-estructurales.svg) |
+| State | [uml-state.drawio](../uml-state.drawio) | Draw.io |
+| Strategy | [uml-strategy.drawio](../uml-strategy.drawio) | Draw.io |
 
 ## Factory Method
 

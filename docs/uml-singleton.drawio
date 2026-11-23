@@ -1,0 +1,70 @@
+<mxfile host="app.diagrams.net" version="21.0.0">
+  <diagram name="Singleton" id="singleton">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ══════════════════════════════════════════════════════ -->
+        <!--  ResourceRepository  (interfaz)                       -->
+        <!-- ══════════════════════════════════════════════════════ -->
+        <mxCell id="RR-head" value="«interface»&#xa;ResourceRepository" style="swimlane;startSize=55;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;align=center;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="310" y="50" width="320" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="RR-methods" value="+findAll() : Promise&lt;Resource[]&gt;&#xa;+findById(id) : Promise&lt;Resource&gt;&#xa;+save(resource) : Promise&lt;void&gt;&#xa;+delete(id) : Promise&lt;boolean&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="RR-head">
+          <mxGeometry x="0" y="55" width="320" height="95" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════════ -->
+        <!--  InMemoryResourceRepository  (Singleton)              -->
+        <!-- ══════════════════════════════════════════════════════ -->
+        <mxCell id="IMR-head" value="«Singleton»&#xa;InMemoryResourceRepository" style="swimlane;startSize=55;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;align=center;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="210" y="310" width="520" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="IMR-attrs" value="-resources : Map&lt;string, Resource&gt;&#xa;-constructor()&#xa;$+getInstance() : InMemoryResourceRepository&#xa;——————————————————————&#xa;+findAll() : Promise&lt;Resource[]&gt;&#xa;+findById(id) : Promise&lt;Resource&gt;&#xa;+save(resource) : Promise&lt;void&gt;&#xa;+delete(id) : Promise&lt;boolean&gt;&#xa;-seed() : void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="IMR-head">
+          <mxGeometry x="0" y="55" width="520" height="145" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════════ -->
+        <!--  globalThis                                           -->
+        <!-- ══════════════════════════════════════════════════════ -->
+        <mxCell id="GT-head" value="«environment»&#xa;globalThis" style="swimlane;startSize=55;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=12;align=center;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="800" y="310" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="GT-attrs" value="+inMemoryResourceRepository? : InMemoryResourceRepository" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="GT-head">
+          <mxGeometry x="0" y="55" width="300" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════════ -->
+        <!--  resourceModule  (raíz de composición)                -->
+        <!-- ══════════════════════════════════════════════════════ -->
+        <mxCell id="RM-head" value="«composition root»&#xa;resourceModule" style="swimlane;startSize=55;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;align=center;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="295" y="620" width="350" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="RM-attrs" value="+resourceUseCases : object" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;" vertex="1" parent="RM-head">
+          <mxGeometry x="0" y="55" width="350" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════════ -->
+        <!--  RELACIONES                                           -->
+        <!-- ══════════════════════════════════════════════════════ -->
+
+        <!-- InMemoryResourceRepository implementa ResourceRepository -->
+        <mxCell id="e-impl" value="implementa" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=0;dashed=1;strokeColor=#d6b656;strokeWidth=2;fontSize=10;fontStyle=2;" edge="1" source="IMR-head" target="RR-head" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- InMemoryResourceRepository almacena instancia en globalThis -->
+        <mxCell id="e-global" value="almacena instancia" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeColor=#b85450;strokeWidth=1.5;fontSize=10;fontStyle=2;" edge="1" source="IMR-head" target="GT-head" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- resourceModule obtiene la instancia con getInstance() -->
+        <mxCell id="e-use" value="getInstance()" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;strokeColor=#9673a6;strokeWidth=1.5;fontSize=10;fontStyle=2;" edge="1" source="RM-head" target="IMR-head" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

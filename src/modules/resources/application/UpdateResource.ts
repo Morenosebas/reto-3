@@ -1,5 +1,6 @@
 import { ResourceNotFoundError } from "../domain/errors";
 import { getResourceCreator } from "../domain/factories";
+import { PublicationStatus } from "../domain/lifecycle";
 import type { Resource } from "../domain/Resource";
 import type { ResourceRepository } from "../domain/ResourceRepository";
 import { parseResourceCreation, parseResourcePatch } from "./ResourceSchemas";
@@ -11,6 +12,10 @@ export class UpdateResource {
     const changes = parseResourcePatch(input);
     const current = await this.repository.findById(id);
     if (!current) throw new ResourceNotFoundError(id);
+
+    if (changes.status !== undefined) {
+      new PublicationStatus(current.status).transitionTo(changes.status);
+    }
 
     const merged = {
       title: current.title,

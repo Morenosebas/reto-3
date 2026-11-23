@@ -14,6 +14,7 @@ import { toResourceDTO } from "../src/modules/resources/presentation/ResourceDTO
 import "./resource-schemas.test";
 import "./structural-patterns.test";
 import "./catalog-front.test";
+import "./behavioral-patterns.test";
 
 const base = { title: "Mesa reutilizable", description: "Mesa de madera en buen estado", category: "furniture", location: "Bogotá" };
 const repository = InMemoryResourceRepository.getInstance();

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="720" viewBox="0 0 1100 720">
+  <rect width="1100" height="720" fill="#ffffff"/>
+  <text x="550" y="36" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1a1a1a">Reutiliza · Patrón Strategy</text>
+
+  <!-- Client -->
+  <rect x="40" y="70" width="220" height="110" fill="#f5f5f5" stroke="#666666" stroke-width="1.5"/>
+  <line x1="40" y1="100" x2="260" y2="100" stroke="#666666" stroke-width="1"/>
+  <text x="150" y="92" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700">Clientes</text>
+  <text x="52" y="122" font-family="Arial" font-size="12" fill="#333">ContactButton</text>
+  <text x="52" y="142" font-family="Arial" font-size="12" fill="#333">ResourceTag</text>
+  <text x="52" y="162" font-family="Arial" font-size="12" fill="#333">página /recursos/[id]</text>
+
+  <!-- ModalityOutreach -->
+  <rect x="380" y="55" width="340" height="155" fill="#dae8fc" stroke="#6c8ebf" stroke-width="3"/>
+  <line x1="380" y1="100" x2="720" y2="100" stroke="#6c8ebf" stroke-width="1"/>
+  <text x="550" y="78" text-anchor="middle" font-family="Arial" font-size="11" font-style="italic">«interface»</text>
+  <text x="550" y="94" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700">ModalityOutreach</text>
+  <text x="392" y="122" font-family="Arial" font-size="11">+ modality : ResourceModality</text>
+  <text x="392" y="142" font-family="Arial" font-size="11">+ composeRequest(details) : string</text>
+  <text x="392" y="162" font-family="Arial" font-size="11">+ describeHandoff(location, details) : string</text>
+  <text x="392" y="182" font-family="Arial" font-size="11">+ tagValue(details) : string</text>
+
+  <!-- Note -->
+  <path d="M780,60 L1040,60 L1040,155 L1025,170 L780,170 Z" fill="#fff9e6" stroke="#d6b656" stroke-width="1.5"/>
+  <polyline points="1025,170 1025,155 1040,155" fill="none" stroke="#d6b656" stroke-width="1.5"/>
+  <text x="795" y="88" font-family="Arial" font-size="12" font-weight="700">Participantes</text>
+  <text x="795" y="110" font-family="Arial" font-size="11">Strategy → ModalityOutreach</text>
+  <text x="795" y="128" font-family="Arial" font-size="11">Concrete → Donation / Exchange / Sale</text>
+  <text x="795" y="146" font-family="Arial" font-size="11">Selector → outreachFor(modality)</text>
+
+  <!-- Concrete strategies -->
+  <rect x="40" y="300" width="300" height="130" fill="#d5e8d4" stroke="#82b366" stroke-width="2"/>
+  <line x1="40" y1="330" x2="340" y2="330" stroke="#82b366" stroke-width="1"/>
+  <text x="190" y="322" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700">DonationOutreach</text>
+  <text x="52" y="355" font-family="Arial" font-size="11">+ modality = "donation"</text>
+  <text x="52" y="375" font-family="Arial" font-size="11">+ mensaje de donación</text>
+  <text x="52" y="395" font-family="Arial" font-size="11">+ tagValue → "Gratis"</text>
+
+  <rect x="400" y="300" width="300" height="130" fill="#d5e8d4" stroke="#82b366" stroke-width="2"/>
+  <line x1="400" y1="330" x2="700" y2="330" stroke="#82b366" stroke-width="1"/>
+  <text x="550" y="322" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700">ExchangeOutreach</text>
+  <text x="412" y="355" font-family="Arial" font-size="11">+ modality = "exchange"</text>
+  <text x="412" y="375" font-family="Arial" font-size="11">+ mensaje de intercambio</text>
+  <text x="412" y="395" font-family="Arial" font-size="11">+ tagValue → contraprestación</text>
+
+  <rect x="760" y="300" width="300" height="130" fill="#d5e8d4" stroke="#82b366" stroke-width="2"/>
+  <line x1="760" y1="330" x2="1060" y2="330" stroke="#82b366" stroke-width="1"/>
+  <text x="910" y="322" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700">SaleOutreach</text>
+  <text x="772" y="355" font-family="Arial" font-size="11">+ modality = "sale"</text>
+  <text x="772" y="375" font-family="Arial" font-size="11">+ mensaje de venta</text>
+  <text x="772" y="395" font-family="Arial" font-size="11">+ tagValue → precio COP</text>
+
+  <!-- Selector -->
+  <rect x="400" y="520" width="300" height="70" fill="#fff2cc" stroke="#d6b656" stroke-width="2.5"/>
+  <text x="550" y="548" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700">outreachFor(modality)</text>
+  <text x="550" y="570" text-anchor="middle" font-family="Arial" font-size="11">: ModalityOutreach</text>
+
+  <defs>
+    <marker id="open2" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8" fill="none" stroke="#333" stroke-width="1.2"/>
+    </marker>
+    <marker id="empty2" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto">
+      <path d="M0,0 L12,5 L0,10 Z" fill="#ffffff" stroke="#333" stroke-width="1.2"/>
+    </marker>
+  </defs>
+  <line x1="260" y1="120" x2="380" y2="120" stroke="#333" stroke-width="1.4" marker-end="url(#open2)"/>
+  <text x="300" y="112" font-family="Arial" font-size="11" fill="#444">usa</text>
+  <line x1="190" y1="300" x2="480" y2="210" stroke="#333" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#empty2)"/>
+  <line x1="550" y1="300" x2="550" y2="210" stroke="#333" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#empty2)"/>
+  <line x1="910" y1="300" x2="620" y2="210" stroke="#333" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#empty2)"/>
+  <line x1="550" y1="520" x2="550" y2="210" stroke="#333" stroke-width="1.4" marker-end="url(#open2)"/>
+  <text x="562" y="360" font-family="Arial" font-size="11" fill="#444">selecciona</text>
+  <line x1="400" y1="555" x2="340" y2="430" stroke="#333" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#open2)"/>
+  <line x1="550" y1="520" x2="550" y2="430" stroke="#333" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#open2)"/>
+  <line x1="700" y1="555" x2="760" y2="430" stroke="#333" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#open2)"/>
+
+  <text x="550" y="640" text-anchor="middle" font-family="Arial" font-size="12" fill="#555">Cada modalidad concentra su redacción en una estrategia</text>
+  <text x="550" y="662" text-anchor="middle" font-family="Arial" font-size="12" fill="#555">WhatsApp, entrega y etiqueta usan la misma estrategia</text>
+</svg>
